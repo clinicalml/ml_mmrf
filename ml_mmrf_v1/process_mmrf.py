@@ -263,3 +263,28 @@ def parse_outcomes(df_pp, granularity = 30):
     print ('parse_outcomes: ',pids.shape, y.shape, e.shape)
     return pids, y, e
 
+def parse_trt_outcomes(trt_df): 
+    """
+    Extract treatment response from STAND_ALONE_TRTRESP file
+    """ 
+    # return best response after first line
+    temp  = trt_df[(trt_df['line'] == 1) & (trt_df['trtstdy'] == trt_df['therstdy']) & (trt_df['bestrespsh'].notna())]
+    bresp = temp[['public_id', 'trtshnm', 'bestrespsh']]
+    pids  = bresp[['public_id']].values.squeeze()
+    resp_dict = {
+        'sCR': 0,
+        'CR': 0, 
+        'VGPR': 0, 
+        'PR': 0, 
+        'SD': 1, 
+        'PD': 1
+    }
+    y = np.array([resp_dict[x] for x in list(bresp[['bestrespsh']].values.squeeze())])
+    names = np.array(['CR', 'PR', 'NR'])
+    print ('parse_outcomes: ',pids.shape, y.shape)
+    return pids, y, names
+
+    
+
+
+

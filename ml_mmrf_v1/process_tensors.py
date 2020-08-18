@@ -68,19 +68,44 @@ def split_balanced(idx_list, event, trfrac = 0.7):
         valist+= idx_val.tolist()
     return np.array(trlist), np.array(valist)
 
-def get_splits(event_obs, nfolds = 5):
+def split_balanced_general(idx_list, event, trfrac = 0.7): 
+    print ('Total: ',idx_list.shape[0])
+    assert idx_list.shape[0] == event.shape[0],'expecting same shapes'
+    idxs = []
+    upper_bound = np.max(event)+1
+    for i in range(upper_bound): 
+        idxs.append(np.where(event==i)[0])
     
+    # get l0,l1,l2,...
+    lists = []
+    for idxi in idxs: 
+        lists.append(idx_list[idxi])
+    
+    trlist, valist = [], []
+    for lidx in lists: 
+        N      = lidx.shape[0]
+        shuf   = np.random.permutation(N)
+        ntrain = int(trfrac*N)
+        idx_train = lidx[shuf[:ntrain]]
+        idx_val   = lidx[shuf[ntrain:]]
+        trlist += idx_train.tolist()
+        valist += idx_val.tolist()
+    return np.array(trlist), np.array(valist)
+    
+def get_splits(event_obs, nfolds = 5):
     np.random.seed(0)
     idx_list  = np.arange(event_obs.shape[0])
-    trainidx, testidx = split_balanced(idx_list, event_obs)
+    trainidx, testidx = split_balanced_general(idx_list, event_obs)
 
     folds_idx = {}
     for fold in range(nfolds):
         idx_list = np.arange(trainidx.shape[0])
         event_fold= event_obs[trainidx]
-        fi_idx_train, fi_idx_valid = split_balanced(idx_list, event_fold)
+        fi_idx_train, fi_idx_valid = split_balanced_general(idx_list, event_fold)
         fi_tr, fi_va = trainidx[fi_idx_train], trainidx[fi_idx_valid]
         folds_idx[fold] = (fi_tr, fi_va)
         print ('Fold: ',fold,fi_idx_train.shape[0], fi_idx_valid.shape[0])
         print ('Event obs: ',event_obs[fi_tr].sum(), event_obs[fi_va].sum())
     return folds_idx, testidx
+
+
