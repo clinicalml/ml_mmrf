@@ -30,28 +30,34 @@ def get_sequential_tensor(df, id_col, feature_name, day_start, day_end = None, g
     patlist = []
     flist   = []
     olist   = []
+    if feature_name == 'line': 
+        hit_second_line = False
     for ii,pat_idx in enumerate(np.sort(rdf.id.unique())):
         pdf  = rdf[rdf.id==pat_idx]
         vals = np.zeros((maxT,))
         obs  = np.zeros((maxT,))
         for ft, st, en in zip(pdf.feature, pdf.start, pdf.end):
-            if st<0:
+            if st<0 or st>=maxT:
                 continue
             if en+1>=maxT:
-                continue
+                en=maxT-1
             if np.any(np.isnan([st, en, ft])):
                 continue
+            if feature_name == 'line' and ft == 2: 
+                hit_second_line = True
             st = int(st)
             en = int(en)
             vals[st:en+1] = ft
             obs[st:en+1]  = 1
+        if feature_name == 'line' and not hit_second_line: 
+            print(f'\ttget_sequential_tensor: did not hit second line for {pat_idx}')
         patlist.append(pat_idx); flist.append(vals); olist.append(obs)
-            
+    
     patient_ids = np.array(patlist); feature_data= np.array(flist); obs_data = np.array(olist)
     print ('\ttget_sequential_tensor: output shapes:',patient_ids.shape, feature_data.shape, obs_data.shape)
     return patient_ids, (feature_data, obs_data)
 
-def parse_labs(df_pp, granularity = 30, maxT=66):
+def parse_labs(df_pp, granularity = 30, maxT=66, add_synthetic_marker=False):
     """
     Use patient_visit file to extract lab data
     """
@@ -122,7 +128,8 @@ def parse_baseline(df_pp, df_ppv, ia_version = 'ia13'):
     print ('parse_baselines: do mean imputation on missing data in baseline')
     merged.fillna(merged.mean(0), axis=0, inplace = True)
     
-    genetic_data = pd.read_csv('%s_pca_embeddings.csv'%ia_version, delimiter=',')
+#     genetic_data = pd.read_csv('%s_pca_embeddings.csv'%ia_version, delimiter=',')
+    genetic_data = pd.read_csv('ia13_pca_embeddings.csv', delimiter=',')
     genetic_data = genetic_data[['PUBLIC_ID','PC1','PC2','PC3','PC4','PC5']]
     # find indices without genetic data & fill values as missing
     diff_px      = np.setdiff1d(merged.values[:,0], genetic_data.values[:,0])
@@ -147,7 +154,7 @@ def get_mtype(df, serum_labs):
     df_l = df_l[df_l.VISIT==0].reset_index(drop=True)
     df_l = df_l.groupby('PUBLIC_ID').mean()
     medians = df_l[serum_labs].median(0)
-    maxval  = (5*(1+medians))
+    maxval  = (15*(1+medians))
     clipped = df_l[serum_labs].clip(upper = maxval, axis=1)
     df_l.loc[:,serum_labs] = clipped
     df_l.fillna(df_l.mean(0), axis=0, inplace = True)
@@ -170,6 +177,23 @@ def get_mtype(df, serum_labs):
     kappa_df = (df_l['kl_ratio']>1.5).rename('kappa_type', inplace=True)
     lambda_df = (df_l['kl_ratio']<0.5).rename('lambda_type', inplace=True)
     
+    true_df = df[['PUBLIC_ID', 'VISIT', 'D_IM_IGH_SITE', 'D_IM_IGL_SITE']]
+    true_df = true_df[(true_df['VISIT'] == 0) & ((true_df['D_IM_IGH_SITE'].notna()) | (true_df['D_IM_IGL_SITE'].notna()))]
+    hc_df = hc_df.to_frame(); igg_df = igg_df.to_frame(); iga_df = iga_df.to_frame()
+    igm_df = igm_df.to_frame(); kappa_df = kappa_df.to_frame(); lambda_df = lambda_df.to_frame()
+    
+    for index, row in true_df.iterrows(): 
+        pid = row['PUBLIC_ID']
+        if isinstance(row['D_IM_IGH_SITE'], str): 
+            if row['D_IM_IGH_SITE'].lower() == 'igg': 
+                igg_df.loc[pid] = True; iga_df.loc[pid] = False; hc_df.loc[pid]  = True 
+            elif row['D_IM_IGH_SITE'].lower() == 'iga': 
+                igg_df.loc[pid] = False; iga_df.loc[pid] = True; hc_df.loc[pid] = True
+        if isinstance(row['D_IM_IGL_SITE'], str): 
+            if row['D_IM_IGL_SITE'].lower() == 'kappa': 
+                kappa_df.loc[pid] = True; lambda_df.loc[pid] = False
+            elif row['D_IM_IGL_SITE'].lower() == 'lambda':
+                kappa_df.loc[pid] = False; lambda_df.loc[pid] = True
     return hc_df, igg_df, iga_df, igm_df, kappa_df, lambda_df
     
 def merge_on_pids(all_pids, pdict, ddict):
@@ -263,25 +287,37 @@ def parse_outcomes(df_pp, granularity = 30):
     print ('parse_outcomes: ',pids.shape, y.shape, e.shape)
     return pids, y, e
 
-def parse_trt_outcomes(trt_df): 
+def parse_trt_outcomes(trt_df, from_gateway=False): 
     """
     Extract treatment response from STAND_ALONE_TRTRESP file
     """ 
-    # return best response after first line
-    temp  = trt_df[(trt_df['line'] == 1) & (trt_df['trtstdy'] == trt_df['therstdy']) & (trt_df['bestrespsh'].notna())]
-    bresp = temp[['public_id', 'trtshnm', 'bestrespsh']]
-    pids  = bresp[['public_id']].values.squeeze()
-    resp_dict = {
-        'sCR': 0,
-        'CR': 0, 
-        'VGPR': 0, 
-        'PR': 0, 
-        'SD': 1, 
-        'PD': 1
-    }
-    y = np.array([resp_dict[x] for x in list(bresp[['bestrespsh']].values.squeeze())])
-    names = np.array(['CR', 'PR', 'NR'])
-    print ('parse_outcomes: ',pids.shape, y.shape)
+    if from_gateway: 
+        import pdb; pdb.set_trace()
+        pd_pids    = pd.read_csv('./cohorts/pd_line2.csv')
+        nonpd_pids = pd.read_csv('./cohorts/nonpd_line2.csv')
+        pd_np      = [row['Patient'][:4] + '_' + row['Patient'][4:] for _, row in pd_pids.iterrows()]
+        nonpd_np   = [row['Patient'][:4] + '_' + row['Patient'][4:] for _, row in nonpd_pids.iterrows()]
+        y          = np.zeros(len(pd_np)+len(nonpd_np)).astype(int)
+        y[:len(pd_np)] = 1
+        pids       = np.array(pd_np + nonpd_np)
+        names   = np.array(['notPD', 'PD'])
+        print ('parse_outcomes (from MMRF gateway): ', pids.shape, y.shape)
+    else: 
+        # return best response after first line
+        temp  = trt_df[(trt_df['line'] == 1) & (trt_df['trtstdy'] == trt_df['therstdy']) & (trt_df['bestrespsh'].notna())]
+        bresp = temp[['public_id', 'trtshnm', 'bestrespsh']]
+        pids  = bresp[['public_id']].values.squeeze()
+        resp_dict = {
+            'sCR': 0,
+            'CR': 0, 
+            'VGPR': 0, 
+            'PR': 0, 
+            'SD': 0, 
+            'PD': 1
+        }
+        y = np.array([resp_dict[x] for x in list(bresp[['bestrespsh']].values.squeeze())])
+        names = np.array(['CR', 'PR', 'NR'])
+        print ('parse_outcomes: ',pids.shape, y.shape)
     return pids, y, names
 
     

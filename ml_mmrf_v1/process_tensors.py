@@ -68,7 +68,7 @@ def split_balanced(idx_list, event, trfrac = 0.7):
         valist+= idx_val.tolist()
     return np.array(trlist), np.array(valist)
 
-def split_balanced_general(idx_list, event, trfrac = 0.7): 
+def split_balanced_general(idx_list, event, trfrac = .7): 
     print ('Total: ',idx_list.shape[0])
     assert idx_list.shape[0] == event.shape[0],'expecting same shapes'
     idxs = []
