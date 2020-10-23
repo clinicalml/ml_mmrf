@@ -9,12 +9,15 @@ Follow the instructions in the data folder to setup the data. You are free to us
 * Enter the desired data folder
 * Run the code in `requirements.sh` to setup the relevant packages you will need in order to setup the data
 * Follow the instructions to download the relevant MMRF dataset files. You will need access to the [MMRF dataset](https://research.themmrf.org/) so please sign up for it.
-* Run the notebooks to setup the data from the raw MMRF dataset files 
-* Copy over the 
-
 
 ### Version 1: `ml_mmrf_v1`
 * The following research papers use this data:
   * `Inductive Biases for Unsupervised, Sequential models of Cancer Progression`
 * MMRF Data Version: IA13
 * Goal: Unsupervised learning of high-dimensional patient data
+
+### Version 2: `ml_mmrf_v2`
+* The following research papers use this data: 
+  * `Attentive, Pharmacodynamic State Space Modeling` 
+* MMRF Data Version: IA13, IA15 
+* To create data tensors from raw MMRF flatfiles, run python ml_mmrf_v2/core/build_mmrf_dataset.py. You can also go through the jupyter notebook, "3_SanityCheckData.ipynb" to verify that the data has been created properly.
