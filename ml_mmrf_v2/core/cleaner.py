@@ -125,9 +125,9 @@ class MMRFCleaner:
         # Gender = -1,1
         self.clean_dset['baseline_data_clean'][:,2]   = self.clean_dset['baseline_data_clean'][:,2]*2-3
         # Mean and standard deviation normalize PCA features
-        pca_mean = self.clean_dset['baseline_data_clean'][:,3:10].mean(0,keepdims=True)
-        pca_std  = np.std(self.clean_dset['baseline_data_clean'][:,3:10], keepdims=True)
-        self.clean_dset['baseline_data_clean'][:,3:10] = (self.clean_dset['baseline_data_clean'][:,3:10]-pca_mean)/pca_std
+        pca_mean = self.clean_dset['baseline_data_clean'][:,4:11].mean(0,keepdims=True)
+        pca_std  = np.std(self.clean_dset['baseline_data_clean'][:,4:11], keepdims=True)
+        self.clean_dset['baseline_data_clean'][:,4:11] = (self.clean_dset['baseline_data_clean'][:,4:11]-pca_mean)/pca_std
         
         print ('------')
         print ('B] After cleaning')

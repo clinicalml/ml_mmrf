@@ -93,8 +93,9 @@ def load_mmrf(fold_span = range(5), suffix='', digitize_K = 0, digitize_method =
         at first and second line therapies for each patient). can be "all", "first_second", 
         or "second".      
     Returns: 
-        new_dset: returns data dictionary with folds and corresponding train, test, and validation
-        sets.
+        new_dset: returns data dictionary with the following structure:
+            key: fold number, val: dictionary ==> {key: 'train', 'test', 'valid', \
+                val: dictionary ==> {key: data type ('x','m'), val: np matrix}}
     """
     new_dset = load_mmrf_quick(fold_span = fold_span, suffix=suffix)
     

@@ -204,7 +204,7 @@ class MMRFParser:
         """
         df_pp = self.data_files['PER_PATIENT']; df_ppv = self.data_files['PER_PATIENT_VISIT']
         ia_version = self.ia_version
-        df = df_pp[['PUBLIC_ID','R_ISS','D_PT_age','D_PT_gender', 'ecog']]
+        df = df_pp[['PUBLIC_ID', 'R_ISS', 'D_PT_age', 'D_PT_gender', 'line1sct', 'ecog']]
         df.rename(columns={'R_ISS':'iss','D_PT_age':'age','D_PT_gender':'gender'}, inplace=True)
         
         # Add beta2 microglobulin into baseline tensor
@@ -225,7 +225,7 @@ class MMRFParser:
         serum_labs = ['D_LAB_serum_iga', 'D_LAB_serum_igg', 'D_LAB_serum_igm','D_LAB_serum_lambda', \
                       'D_LAB_serum_kappa', 'D_LAB_serum_m_protein']
         mtype_dfs = get_mtype(df_ppv, serum_labs) #hc_df, igg_df, iga_df, igm_df, kappa_df, lambda_df
-
+        
         print ('parse_baselines: do mean imputation on missing data in baseline')
         merged.fillna(merged.mean(0), axis=0, inplace = True)
         
