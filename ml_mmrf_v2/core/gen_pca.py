@@ -33,6 +33,8 @@ def gen_pca_embeddings(ia_version='ia15', trainidx=None, testidx=None, write_to_
         # write to csv 
     
     # return dataframe with columns: 'PUBLIC_ID', 'PC1', 'PC2', ...
-    
-    
+
+
+if __name__ == '__main__':
+    gen_pca_embeddings() # use for debugging
     
