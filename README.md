@@ -1,4 +1,15 @@
-# Machine Learning with data from the Multiple Myeloma Research Foundation
+# Machine Learning with Multiple Myeloma Research Foundation (MMRF) CoMMpass Dataset
+
+## Overview
+
+## Data Access 
+Access to the MMRF CoMMpass data is through the [MMRF gateway](https://research.themmrf.org/). You must first register using your institutional email to receive acess.
+
+## Methods 
+
+
+## Data Description 
+
 
 This repository is organized into <strong>data folders</strong>. Each such folder contains code to setup MMRF datasets from various versions of the raw MMRF files. The datasets from each data folder may be used in multiple different projects. 
 
