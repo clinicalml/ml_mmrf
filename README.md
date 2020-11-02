@@ -15,8 +15,6 @@ Access to the MMRF CoMMpass data is through the [MMRF gateway](https://research.
 
 ### Selecting Clinical Outcome
 
-### Filtering based on Outcome
-
 ### Cleaning and Normalization of Data 
 
 ### Train/Test Split 
