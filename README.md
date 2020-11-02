@@ -3,7 +3,7 @@
 ## Overview
 The MMRF CoMMpass registry contains longitudinal data for over 1000 newly diagnosed multiple myeloma patients. Researchers track these patients from initial diagnosis through their course of treatment over a minimum of 5 years, capturing patient lab values, treatments, and complications. In addition to these data, there is a rich store of biological and demographic data of each patient at baseline, including RNA-seq, cytogenetics, and survey (e.g. Quality of Life) data. 
 
-ML-MMRF is a repository built to process the MMRF CoMMpass Dataset and allows researchers to use this data for machine learning. We begin by parsing the raw MMRF files into tensors (stored in numpy matrices), clean and normalize the tensors, and provide a notebook for validation of the procedure. 
+ML-MMRF is a repository built to process the MMRF CoMMpass Dataset and allows researchers to use these data for machine learning. We first parse the raw MMRF files into tensors (stored in numpy matrices), then clean and normalize the tensors, and finally provide a notebook for validation of the procedure. 
 
 ## Data Access 
 Access to the MMRF CoMMpass data is through the [MMRF gateway](https://research.themmrf.org/). You must first register using your institutional email to receive acess.
