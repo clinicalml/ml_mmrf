@@ -9,6 +9,22 @@ ML-MMRF is a repository built to process the MMRF CoMMpass Dataset and allows re
 Access to the MMRF CoMMpass data is through the [MMRF gateway](https://research.themmrf.org/). You must first register using your institutional email to receive access.
 
 ## Methods 
+### Instructions to Create Tensors 
+
+#### Parsing of Sequential Tensors 
+
+### Selecting Clinical Outcome
+
+### Filtering based on Outcome
+
+### Cleaning and Normalization of Data 
+
+### Train/Test Split 
+
+### Processing of Genetic Data 
+
+### Validation and Sanity Checks
+
 
 
 ## Data Description 
