@@ -9,6 +9,7 @@ ML-MMRF is a repository built to process the MMRF CoMMpass Dataset and allows re
 Access to the MMRF CoMMpass data is through the [MMRF Researcher Gateway](https://research.themmrf.org/). You must first register using your institutional email to receive access.
 
 ## Methods 
+At a high level, run ```python ml_mmrf_v2/core/build_mmrf_dataset.py``` to create data tensors from raw MMRF flatfiles. After data processing, we recommend going through the provided jupyter notebook, "3_SanityCheckData.ipynb" to verify that the tensors have been created properly. Below, we detail the specific aspects of the outer level build scripts. 
 
 ### Parsing of Sequential Tensors 
 
