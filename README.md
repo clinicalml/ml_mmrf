@@ -26,16 +26,16 @@ We obtain the treatments given to a patient across time along with the line of t
 We extract several features that are gathered for each patient at baseline (i.e. before they are started on their treatment course). These include demographic features, such as age and gender, multiple myeloma subtype, namely IgG type, IgA type, which we compute based on serum lab values at baseline, and the PCA output of patient RNA-seq data. We do mean imputation on all missing baseline data. However, for the genetic PCA data, we do knn (k=5) imputation.
 
 ### Selecting Clinical Outcome
-outcomes (e.g. time to death, treatment response)
+Tasks of potential clinical interest in multiple myeloma often include predicting an outcome for a patient conditioned on their treatments, disease subtype, genetic information, and lab values. These clinical outcomes include time to death, 1-year or 2-year mortality, and treatment response to a particular line of therapy. Of note, treatment response in multiple myeloma is categorized into six buckets from most responsive to least responsive: 'stringent complete response', 'complete response', 'very good partial response', 'partial response', 'stable disease', and 'progressive disease'. The Parser class collects the second line treatment response for each patient as a binary variable between 'progressive disease' and non-'progressive disease'. It also collects the time to death for each patient. We restrict the number of patients in our cohort based on who has an observed clinical outcome of interest (specified by user).
 
 ### Cleaning and Normalization of Data 
+The Cleaner class in ```core/cleaner.py``` is responsible for taking the tensors outputted by the Parser above and normalizing the values. Normalization procedure, which we describe below, is different for each data type. For example, we z-score normalize each of the baseline features. Namely, for a baseline feature, ```b```, we have ```normb = (b - mean(b)) / std(b)```. For the lab values, we utilize a slightly different normalization procedure. We normalize such that the value being >0 refers to an unhealthy lab. Specifically, we subtract the healthy maximum value and then multiply the lab by a scaling factor to map it to a reasonable range (<10).  
 
 ### Train/Test Split 
-
-### Processing of Genetic Data 
+The Splitter class in ```core/splitter.py``` is responsible for generating the train and test sets for the MMRF cohort. It also generates k folds (k specified by the user but generally we have used k=5) of the training data for k-fold cross validation. The split is balanced on the clinical outcome specified by the user above. 
 
 ### Validation and Sanity Checks
-
+The notebook, "3_SanityCheckData.ipynb", allows a user to see if the labs, treatments, and baseline data were processed correctly.
 
 
 ## Data Description 
