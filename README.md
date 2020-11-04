@@ -48,8 +48,8 @@ The notebook, "3_SanityCheckData.ipynb", allows a user to see if the labs, treat
 
 ### Data Files 
 
-There are three main non-genetic data files in CSV format that are included in the FlatFiles released by the MMRF: 
-* ```MMRF_CoMMpass_IA15_PER_PATIENT.csv```
+There are three main non-genetic data files in CSV format that we use, which are included in the FlatFiles released by the MMRF: 
+* ```MMRF_CoMMpass_IA15_PER_PATIENT.csv```: This file contains the baseline demographic (age, gender, race, and ethnicity) and cytogenetics (e.g. FISH results) for each patient. It also includes ISS stage.
 * ```MMRF_CoMMpass_IA15_PER_PATIENT_VISIT.csv```
 * ```MMRF_CoMMpass_IA15_STAND_ALONE_TRTRESP.csv```
 
