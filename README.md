@@ -52,7 +52,7 @@ This repository is organized into <strong>data folders</strong>. Each such folde
 Follow the instructions in the data folder to setup the data. You are free to use the data as is. To run machine learning models on the data, you will also need to setup the github repositories for the code. 
 
 
-## Instructions 
+<> ## Instructions 
 * Enter the desired data folder
 * Run the code in `requirements.sh` to setup the relevant packages you will need in order to setup the data
 * Follow the instructions to download the relevant MMRF dataset files. You will need access to the [MMRF dataset](https://research.themmrf.org/) so please sign up for it.
