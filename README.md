@@ -46,6 +46,13 @@ The notebook, "3_SanityCheckData.ipynb", allows a user to see if the labs, treat
 
 ## Data Description 
 
+### Data Files 
+
+There are three main non-genetic data files in CSV format that are included in the FlatFiles released by the MMRF: 
+* ```MMRF_CoMMpass_IA15_PER_PATIENT.csv```
+* ```MMRF_CoMMpass_IA15_PER_PATIENT_VISIT.csv```
+* ```MMRF_CoMMpass_IA15_STAND_ALONE_TRTRESP.csv```
+
 
 [//]: <> (This repository is organized into <strong>data folders</strong>. Each such folder contains code to setup MMRF datasets from various versions of the raw MMRF files. The datasets from each data folder may be used in multiple different projects.)
 
