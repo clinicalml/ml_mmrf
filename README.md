@@ -14,15 +14,20 @@ At a high level, run ```python ml_mmrf_v2/core/build_mmrf_dataset.py``` to creat
 ### Parsing of Sequential Tensors 
 The Parser class in ```core/parser.py``` is responsible for taking the raw data stored in pandas dataframes and converting it into sequential data tensors of size ```N x maxT x D```, where N is the number of examples, maxT is the max number of time steps, and D is the feature dimension. The user specifies the granularity of time at which we parse, i.e. the number of days between subsequent time steps, and also specifies maxT, the max time for which we parse. Finally, we also return a binary mask tensor, where we store a value of 1 if it is observed and 0 if it is missing. As an example, if we specify granularity to be 60 and maxT to be 33, which are the default settings, then the treatment and labs tensors will be of size N x 33 x D. Furthermore, suppose ```t = 1,...,maxT```; the time between ```t``` and ```t+1``` is determined by granularity, which in this case is 60 days (2 months). 
 
-There are four data types that we parse from the raw MMRF files: treatments, patient labs, outcomes (e.g. time to death, treatment response), and baseline data (basic demographics and cytogenetics). We detail the specific features available in the raw files in the *Data Description* section below. For now, we will give a brief overview of how we actually do the parsing for each data type. 
+There are three data types that we parse from the raw MMRF files: treatments, patient labs, and baseline data (basic demographics and cytogenetics). We detail the specific features available in the raw files in the *Data Description* section below. For now, we will give a brief overview of how we actually do the parsing for each data type. 
 
 #### Patient Lab Values 
 The subset of lab values that we select from the raw files at each visit include a patient's blood chemistry values (i.e. albumin, BUN, calcium, creatinine, glucose, and total protein), complete blood counts (i.e. absolute neutrophils, hemoglobin, WBC, and plateletes), and finally, their serum immunoglobuins (i.e. IgG, IgA, IgM, lambda, kappa, and M-protein). We then clip the values of these labs to 5 times the median value, and then build the sequential tensor by processing the values based on the user-specified granularity and maxT. Each visit and lab collection panel is labeled with the day in which it was taken, allowing us to bucket the lab value into a particular time step. The lab values at a patient's baseline visit are mean imputed across the cohort at baseline.
 
 #### Patient Treatments
+We obtain the treatments given to a patient across time along with the line of therapy that each treatment is associated with. Additionally, we restrict the treatments to those that appear in the top 10 treatment combinations with respect to raw counts over the entire time course. The final treatment representation that we use is a 9-dimensional binary vector where five dimensions refer to whether or not one of Dexamethasone, Lenalidomide, Bortezomib, Carfilzomib, and Cyclophosphamide are given. The sixth thru ninth dimensions of the binary vector are a one-hot representation of the line of therapy, which we categorize into one of three buckets: Line 1, Line 2, or >= Line 3. When parsing the treatments, we leverage the start and end days which are given for each of the regimens to construct the tensor, whose final size is N x maxT x 9. 
+
+#### Patient Baseline Data 
+
 
 
 ### Selecting Clinical Outcome
+outcomes (e.g. time to death, treatment response)
 
 ### Cleaning and Normalization of Data 
 
