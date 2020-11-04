@@ -67,4 +67,4 @@ The notebook, "3_SanityCheckData.ipynb", allows a user to see if the labs, treat
 [//]: <> (* The following research papers use this data:)
 [//]: <> (* `Attentive, Pharmacodynamic State Space Modeling`)
 [//]: <> (* MMRF Data Version: IA13, IA15)
-[//]: <> (* To create data tensors from raw MMRF flatfiles, run python ml_mmrf_v2/core/build_mmrf_dataset.py. You can also go through the jupyter notebook, "3_SanityCheckData.ipynb" to verify that the data has been created properly.)
+[//]: <> (* To create data tensors from raw MMRF flatfiles, run python ml_mmrf_v2/core/build_mmrf_dataset.py. You can also go through the jupyter notebook, ) [//]: <> ("3_SanityCheckData.ipynb" to verify that the data has been created properly.)
