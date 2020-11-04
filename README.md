@@ -44,14 +44,14 @@ The Splitter class in ```core/splitter.py``` is responsible for generating the t
 The notebook, "3_SanityCheckData.ipynb", allows a user to see if the labs, treatments, and baseline data were processed correctly.
 
 
-## Data Description 
-
-### Data Files 
+## Data Files 
 
 There are three main non-genetic data files in CSV format that we use, which are included in the FlatFiles released by the MMRF: 
-* ```MMRF_CoMMpass_IA15_PER_PATIENT.csv```: This file contains the baseline demographic (age, gender, race, and ethnicity) and cytogenetics (e.g. FISH results) for each patient. It also includes ISS stage.
-* ```MMRF_CoMMpass_IA15_PER_PATIENT_VISIT.csv```
-* ```MMRF_CoMMpass_IA15_STAND_ALONE_TRTRESP.csv```
+* ```MMRF_CoMMpass_IA15_PER_PATIENT.csv```: Contains the baseline demographic (age, gender, race, and ethnicity) and cytogenetics (e.g. FISH results) for each patient. It also includes ISS stage.
+* ```MMRF_CoMMpass_IA15_PER_PATIENT_VISIT.csv```: Contains the sequential lab values and other longitudinal information about each patient. Specifically, we are given the visit date, any labs collected during that visit, as well as symptoms and signs gathered from physical exam, patient history, and/or labs (e.g. fatigue, bone pain, hypercalcemia, etc.). We are also given quality of life survey data. 
+* ```MMRF_CoMMpass_IA15_STAND_ALONE_TRTRESP.csv```: Contains the longitudinal treatment information for each patient, including the therapy name and class, start and end days for each therapy, the line associated with the therapy, and the best response for each line. 
+
+Each flat file is associated with a data dictionary upon download. Each dictionary has three relevant columns: ```name```, which has the feature names, ```label```, which contains a short description of the feature, and ```vartype```, which details the type of feature (e.g. CHAR, NUM).
 
 
 [//]: <> (This repository is organized into <strong>data folders</strong>. Each such folder contains code to setup MMRF datasets from various versions of the raw MMRF files. The datasets from each data folder may be used in multiple different projects.)
