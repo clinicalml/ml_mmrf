@@ -55,7 +55,7 @@ The notebook, "3_SanityCheckData.ipynb", allows a user to see if the labs, treat
 [//]: <> (## Instructions)
 [//]: <> (* Enter the desired data folder)
 [//]: <> (* Run the code in `requirements.sh` to setup the relevant packages you will need in order to setup the data)
-[//]: <> (* Follow the instructions to download the relevant MMRF dataset files. You will need access to the [MMRF dataset](https://research.themmrf.org/) so please sign up for it.)
+[//]: <> (* Follow the instructions to download the relevant MMRF dataset files. You will need access to the so please sign up for it.)
 
 [//]: <> (### Version 1: `ml_mmrf_v1`)
 [//]: <> (* The following research papers use this data:)
