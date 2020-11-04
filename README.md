@@ -1,4 +1,4 @@
-# Machine Learning with Multiple Myeloma Research Foundation (MMRF) CoMMpass Dataset
+# Machine Learning with Multiple Myeloma Research Foundation (MMRF) CoMMpass Dataset (ML-MMRF V2)
 
 ## Overview
 The MMRF CoMMpass registry contains longitudinal data for over 1000 newly diagnosed multiple myeloma patients. Researchers track these patients from initial diagnosis through their course of treatment over a minimum of 5 years, capturing patient lab values, treatments, and complications. In addition to these data, there is a rich store of biological and demographic data of each patient at baseline, including RNA-seq, cytogenetics, and survey (e.g. Quality of Life) data. 
@@ -23,8 +23,7 @@ The subset of lab values that we select from the raw files at each visit include
 We obtain the treatments given to a patient across time along with the line of therapy that each treatment is associated with. Additionally, we restrict the treatments to those that appear in the top 10 treatment combinations with respect to raw counts over the entire time course. The final treatment representation that we use is a 9-dimensional binary vector where five dimensions refer to whether or not one of Dexamethasone, Lenalidomide, Bortezomib, Carfilzomib, and Cyclophosphamide are given. The sixth thru ninth dimensions of the binary vector are a one-hot representation of the line of therapy, which we categorize into one of three buckets: Line 1, Line 2, or >= Line 3. When parsing the treatments, we leverage the start and end days which are given for each of the regimens to construct the tensor, whose final size is N x maxT x 9. 
 
 #### Patient Baseline Data 
-
-
+We extract several features that are gathered for each patient at baseline (i.e. before they are started on their treatment course). These include demographic features, such as age and gender, multiple myeloma subtype, namely IgG type, IgA type, which we compute based on serum lab values at baseline, and the PCA output of patient RNA-seq data. We do mean imputation on all missing baseline data. However, for the genetic PCA data, we do knn (k=5) imputation.
 
 ### Selecting Clinical Outcome
 outcomes (e.g. time to death, treatment response)
