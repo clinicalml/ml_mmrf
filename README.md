@@ -1,4 +1,4 @@
-# Machine Learning with Multiple Myeloma Research Foundation (MMRF) CoMMpass Dataset (ML-MMRF V2)
+# Machine Learning with Multiple Myeloma Research Foundation (MMRF) CoMMpass Dataset (ML-MMRF v2)
 
 ## Overview
 The MMRF CoMMpass registry contains longitudinal data for over 1000 newly diagnosed multiple myeloma patients. Researchers track these patients from initial diagnosis through their course of treatment over a minimum of 5 years, capturing patient lab values, treatments, and complications. In addition to these data, there is a rich store of biological and demographic data of each patient at baseline, including RNA-seq, cytogenetics, and survey (e.g. Quality of Life) data. 
@@ -47,9 +47,9 @@ The notebook, "3_SanityCheckData.ipynb", allows a user to see if the labs, treat
 ## Data Description 
 
 
-This repository is organized into <strong>data folders</strong>. Each such folder contains code to setup MMRF datasets from various versions of the raw MMRF files. The datasets from each data folder may be used in multiple different projects. 
+[//]: <> (This repository is organized into <strong>data folders</strong>. Each such folder contains code to setup MMRF datasets from various versions of the raw MMRF files. The datasets from each data folder may be used in multiple different projects. 
 
-Follow the instructions in the data folder to setup the data. You are free to use the data as is. To run machine learning models on the data, you will also need to setup the github repositories for the code. 
+Follow the instructions in the data folder to setup the data. You are free to use the data as is. To run machine learning models on the data, you will also need to setup the github repositories for the code.)
 
 
 [//]: <> (## Instructions)
