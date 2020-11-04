@@ -8,8 +8,14 @@ ML-MMRF is a repository built to process the MMRF CoMMpass Dataset and allows re
 ## Data Access 
 Access to the MMRF CoMMpass data is through the [MMRF Researcher Gateway](https://research.themmrf.org/). You must first register using your institutional email to receive access.
 
+## Instructions 
+* Enter the folder ml_mmrf_v2.
+* Run the code in `requirements.sh` to setup the relevant packages you will need in order to setup the data.
+* Sign up on the MMRF Gateway linked above to receive access to the data and then download FlatFiles.
+* Finally, run ```python ml_mmrf_v2/core/build_mmrf_dataset.py --fdir [PATH TO FLATFILES]``` to create the data tensors from the raw MMRF flatfiles. Note that their are additional arguments you can specify. Please see the script for details.
+
 ## Methods 
-At a high level, run ```python ml_mmrf_v2/core/build_mmrf_dataset.py``` to create data tensors from raw MMRF flatfiles. After data processing, we recommend going through the provided jupyter notebook, "3_SanityCheckData.ipynb" to verify that the tensors have been created properly. Below, we detail the specific aspects of the outer level build script. 
+After data processing, we recommend going through the provided jupyter notebook, "3_SanityCheckData.ipynb" to verify that the tensors have been created properly. Below, we detail the specific aspects of the outer level build script. 
 
 ### Parsing of Sequential Tensors 
 The Parser class in ```core/parser.py``` is responsible for taking the raw data stored in pandas dataframes and converting it into sequential data tensors of size ```N x maxT x D```, where N is the number of examples, maxT is the max number of time steps, and D is the feature dimension. The user specifies the granularity of time at which we parse, i.e. the number of days between subsequent time steps, and also specifies maxT, the max time for which we parse. Finally, we also return a binary mask tensor, where we store a value of 1 if it is observed and 0 if it is missing. As an example, if we specify granularity to be 60 and maxT to be 33, which are the default settings, then the treatment and labs tensors will be of size N x 33 x D. Furthermore, suppose ```t = 1,...,maxT```; the time between ```t``` and ```t+1``` is determined by granularity, which in this case is 60 days (2 months). 
