@@ -16,6 +16,11 @@ The Parser class in ```core/parser.py``` is responsible for taking the raw data 
 
 There are four data types that we parse from the raw MMRF files: treatments, patient labs, outcomes (e.g. time to death, treatment response), and baseline data (basic demographics and cytogenetics). We detail the specific features available in the raw files in the *Data Description* section below. For now, we will give a brief overview of how we actually do the parsing for each data type. 
 
+#### Patient Lab Values 
+The subset of lab values that we select from the raw files at each visit include a patient's blood chemistry values (i.e. albumin, BUN, calcium, creatinine, glucose, and total protein), complete blood counts (i.e. absolute neutrophils, hemoglobin, WBC, and plateletes), and finally, their serum immunoglobuins (i.e. IgG, IgA, IgM, lambda, kappa, and M-protein). We then clip the values of these labs to 5 times the median value, and then build the sequential tensor by processing the values based on the user-specified granularity and maxT. Each visit and lab collection panel is labeled with the day in which it was taken, allowing us to bucket the lab value into a particular time step. The lab values at a patient's baseline visit are mean imputed across the cohort at baseline.
+
+#### Patient Treatments
+
 
 ### Selecting Clinical Outcome
 
