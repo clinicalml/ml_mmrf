@@ -12,7 +12,7 @@ Access to the MMRF CoMMpass data is through the [MMRF Researcher Gateway](https:
 * Enter the folder ml_mmrf_v2.
 * Run the code in `requirements.sh` to setup the relevant packages you will need in order to setup the data.
 * Sign up on the MMRF Gateway linked above to receive access to the data and then download FlatFiles.
-* Finally, run ```python ml_mmrf_v2/core/build_mmrf_dataset.py --fdir [PATH TO FLATFILES]``` to create the data tensors from the raw MMRF flatfiles. Note that their are additional arguments you can specify, although this is not strictly necessary. Please see the script for details.
+* Finally, run ```python ml_mmrf_v2/core/build_mmrf_dataset.py --fdir [PATH TO FLATFILES] --outcomes_type [OUTCOMES_TYPE (mortality or trt_resp)]``` to create the data tensors from the raw MMRF flatfiles. Note that there are additional arguments you can specify, although this is not strictly necessary. Please see the script for details.
 
 ## Methods 
 After data processing, we recommend going through the provided jupyter notebook, "3_SanityCheckData.ipynb" to verify that the tensors have been created properly. Below, we detail the specific aspects of the outer level build script. 
@@ -50,6 +50,8 @@ There are three main non-genetic data files in CSV format that we use, which are
 * ```MMRF_CoMMpass_IA15_PER_PATIENT.csv```: Contains the baseline demographic (age, gender, race, and ethnicity) and cytogenetics (e.g. FISH results) for each patient. It also includes ISS stage.
 * ```MMRF_CoMMpass_IA15_PER_PATIENT_VISIT.csv```: Contains the sequential lab values and other longitudinal information about each patient. Specifically, we are given the visit date, any labs collected during that visit, as well as symptoms and signs gathered from physical exam, patient history, and/or labs (e.g. fatigue, bone pain, hypercalcemia, etc.). We are also given quality of life survey data. 
 * ```MMRF_CoMMpass_IA15_STAND_ALONE_TRTRESP.csv```: Contains the longitudinal treatment information for each patient, including the therapy name and class, start and end days for each therapy, the line associated with the therapy, and the best response for each line. 
+* ```MMRF_CoMMpass_{ia_version.upper()}a_E74GTF_Cufflinks_Gene_FPKM.txt```: Contains the RNA-seq data for each patient. 
+* ```GRCh37.p13_E92_mart_export.txt```: Genome reference assembly file that doesn't come with the MMRF Study but that we provide. Can also be downloaded from [here](https://www.ncbi.nlm.nih.gov/assembly/GCF_000001405.39).
 
 Each flat file is associated with a data dictionary upon download. Each dictionary has three relevant columns: ```name```, which has the feature names, ```label```, which contains a short description of the feature, and ```vartype```, which details the type of feature (e.g. CHAR, NUM).
 
