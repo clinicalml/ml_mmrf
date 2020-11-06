@@ -292,7 +292,6 @@ def parse_trt_outcomes(trt_df, from_gateway=False):
     Extract treatment response from STAND_ALONE_TRTRESP file
     """ 
     if from_gateway: 
-        import pdb; pdb.set_trace()
         pd_pids    = pd.read_csv('./cohorts/pd_line2.csv')
         nonpd_pids = pd.read_csv('./cohorts/nonpd_line2.csv')
         pd_np      = [row['Patient'][:4] + '_' + row['Patient'][4:] for _, row in pd_pids.iterrows()]
@@ -303,8 +302,8 @@ def parse_trt_outcomes(trt_df, from_gateway=False):
         names   = np.array(['notPD', 'PD'])
         print ('parse_outcomes (from MMRF gateway): ', pids.shape, y.shape)
     else: 
-        # return best response after first line
-        temp  = trt_df[(trt_df['line'] == 1) & (trt_df['trtstdy'] == trt_df['therstdy']) & (trt_df['bestrespsh'].notna())]
+        # return best response after second line
+        temp  = trt_df[(trt_df['line'] == 2) & (trt_df['trtstdy'] == trt_df['therstdy']) & (trt_df['bestrespsh'].notna())]
         bresp = temp[['public_id', 'trtshnm', 'bestrespsh']]
         pids  = bresp[['public_id']].values.squeeze()
         resp_dict = {
