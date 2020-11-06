@@ -88,7 +88,10 @@ class MMRFSplitter:
         '''
         # train_valid_folds, testidx = get_splits(new_dset['event_obs'], nfolds=5)
         np.random.seed(0)
-        event_obs = self.dset['event_obs']
+        if self.outcomes_type == 'mortality': 
+            event_obs = self.dset['event_obs']
+        else: 
+            event_obs = self.dset['y_data']
         idx_list  = np.arange(event_obs.shape[0])
         trainidx, testidx = self.split_balanced_general(idx_list, event_obs)
 
@@ -101,7 +104,8 @@ class MMRFSplitter:
             folds_idx[fold] = (fi_tr, fi_va)
             print ('Fold: ',fold,fi_idx_train.shape[0], fi_idx_valid.shape[0])
             print ('Event obs: ',event_obs[fi_tr].sum(), event_obs[fi_va].sum())
-
+        self.train_valid_pids  = np.concatenate((self.dset['patient_ids'][folds_idx[0][0]],self.dset['patient_ids'][folds_idx[0][1]]))
+        self.test_pids         = self.dset['patient_ids'][testidx]
         self.train_valid_folds = folds_idx 
         self.testidx = testidx
         self.nfolds  = nfolds
@@ -120,7 +124,7 @@ class MMRFSplitter:
         '''
         assert self.train_valid_folds is not None, 'need to run split_data() function in MMRFSplitter Class'
         assert self.testidx is not None, 'need to run split_data() function in MMRFSplitter Class'
-        return self.train_valid_folds, self.testidx
+        return self.train_valid_folds, self.testidx, self.train_valid_pids, self.test_pids
 
     def get_split_data(self): 
         '''    

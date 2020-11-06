@@ -6,6 +6,7 @@ import numpy as np
 import warnings
 from fancyimpute import KNN as KNN_impute
 from utils import *
+from gen_pca import *
 
 class MMRFParser:
     '''
@@ -22,11 +23,12 @@ class MMRFParser:
     case is 60 days (2 months).
     '''
 
-    def __init__(self, fdir, ia_version, granularity, maxT):
+    def __init__(self, fdir, ia_version, granularity, maxT, outcomes_type):
         self.fdir = fdir 
         self.ia_version  = ia_version
         self.granularity = granularity
         self.maxT        = maxT
+        self.outcomes_type = outcomes_type
 
         # set up dictionary for dataset
         self.dataset = {}
@@ -229,9 +231,11 @@ class MMRFParser:
         print ('parse_baselines: do mean imputation on missing data in baseline')
         merged.fillna(merged.mean(0), axis=0, inplace = True)
         
-    #     genetic_data = pd.read_csv('%s_pca_embeddings.csv'%ia_version, delimiter=',')
-        # TODO: add function that generates these embeddings
-        genetic_data = pd.read_csv('./ia13_pca_embeddings.csv', delimiter=',') 
+        if os.path.exists(f'./folds_{self.outcomes_type}.pkl'): 
+            genetic_data = gen_pca_embeddings(train_test_file=f'./folds_{self.outcomes_type}.pkl')
+        else: 
+            genetic_data = gen_pca_embeddings(train_test_file=None)
+#         genetic_data = pd.read_csv('./ia13_pca_embeddings.csv', delimiter=',') 
         genetic_data = genetic_data[['PUBLIC_ID','PC1','PC2','PC3','PC4','PC5']]
         # find indices without genetic data & fill values as missing
         diff_px      = np.setdiff1d(merged.values[:,0], genetic_data.values[:,0])
@@ -325,7 +329,6 @@ class MMRFParser:
         """ 
         trt_df = self.data_files['STAND_ALONE_TRTRESP']
         if from_gateway: 
-            import pdb; pdb.set_trace()
             pd_pids    = pd.read_csv('./cohorts/pd_line2.csv')
             nonpd_pids = pd.read_csv('./cohorts/nonpd_line2.csv')
             pd_np      = [row['Patient'][:4] + '_' + row['Patient'][4:] for _, row in pd_pids.iterrows()]
