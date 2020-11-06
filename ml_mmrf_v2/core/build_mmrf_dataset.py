@@ -35,7 +35,7 @@ def main(args, save_intermediates=True):
     print(dataset.keys())
     
     if save_intermediates: 
-        with open(f'1_mmrf_dataset_{args.granularity//30}mos_type.pkl','wb') as f:
+        with open(f'../output/1_mmrf_dataset_{args.granularity//30}mos_type.pkl','wb') as f:
             pickle.dump(dataset, f)
 
     # clean, clean, clean
@@ -50,16 +50,16 @@ def main(args, save_intermediates=True):
     mm_splitter.split_data(nfolds=nfolds)
     if save_intermediates: 
         train_valid_folds, testidx, trainvalid_pids, test_pids = mm_splitter.get_splits()
-        with open(f'./folds_{outcomes_type}.pkl','wb') as f:
+        with open(f'../output/folds_{outcomes_type}.pkl','wb') as f:
             pickle.dump((train_valid_folds, testidx, trainvalid_pids, test_pids),f)
 
     final_datasets = mm_splitter.get_split_data()
     if save_intermediates: 
         for fold in range(nfolds): 
             final_dataset = final_datasets[fold]
-            fname = 'cleaned_mm'+str(fold)+'_2mos.pkl'
+            fname = '../output/cleaned_mm'+str(fold)+'_2mos.pkl'
             if args.outcomes_type == 'trt_resp': 
-                fname = 'cleaned_mm'+str(fold)+'_2mos_tr.pkl'
+                fname = '../output/cleaned_mm'+str(fold)+'_2mos_tr.pkl'
             with open(fname,'wb') as f:
                 pickle.dump(final_dataset, f)
     print('[---Processing Complete---]')

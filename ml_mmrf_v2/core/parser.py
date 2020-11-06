@@ -230,9 +230,8 @@ class MMRFParser:
         
         print ('parse_baselines: do mean imputation on missing data in baseline')
         merged.fillna(merged.mean(0), axis=0, inplace = True)
-        
-        if os.path.exists(f'./folds_{self.outcomes_type}.pkl'): 
-            genetic_data = gen_pca_embeddings(train_test_file=f'./folds_{self.outcomes_type}.pkl')
+        if os.path.exists(f'../output/folds_{self.outcomes_type}.pkl'): 
+            genetic_data = gen_pca_embeddings(train_test_file=f'../output/folds_{self.outcomes_type}.pkl')
         else: 
             genetic_data = gen_pca_embeddings(train_test_file=None)
 #         genetic_data = pd.read_csv('./ia13_pca_embeddings.csv', delimiter=',') 
