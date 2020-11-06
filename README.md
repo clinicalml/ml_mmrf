@@ -6,7 +6,7 @@ The Multiple Myeloma Research Foundation (MMRF) CoMMpass registry contains longi
 ML-MMRF is a repository built to process the MMRF CoMMpass Dataset and allows researchers to use these data for machine learning. We first parse the raw MMRF files into tensors (stored in numpy matrices), then clean and normalize the tensors, and finally provide a notebook for validation of the procedure. 
 
 ## Data Access 
-Access to the MMRF CoMMpass data is through the [MMRF Researcher Gateway](https://research.themmrf.org/). You must first register using your institutional email to receive access.
+Access to the MMRF CoMMpass data is through the [MMRF Researcher Gateway](https://research.themmrf.org/). You must first register using your institutional email to receive access. Once you have access, please download the FlatFiles and the associated dictionaries as well as the file, ```MMRF_CoMMpass_IA15_Seq_QC_Summary.csv``` and ```MMRF_CoMMpass_IA15a_E74GTF_Cufflinks_Gene_FPKM.txt```. The latter files will be necessary for processing of the genetic data.
 
 ## Instructions 
 * Enter the folder ml_mmrf_v2.
