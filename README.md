@@ -1,4 +1,4 @@
-# Machine Learning with Multiple Myeloma Research Foundation CoMMpass Dataset (ML-MMRF v2)
+# Machine Learning with Multiple Myeloma Research Foundation CoMMpass Dataset (ML-MMRF)
 
 ## Overview
 The Multiple Myeloma Research Foundation (MMRF) CoMMpass registry contains longitudinal data for over 1000 newly diagnosed multiple myeloma patients. Researchers track these patients from initial diagnosis through their course of treatment over a minimum of 5 years, capturing patient lab values, treatments, and complications. In addition to these data, there is a rich store of biological and demographic data of each patient at baseline, including RNA-seq, cytogenetics, and survey (e.g. Quality of Life) data. 
@@ -9,7 +9,7 @@ ML-MMRF is a repository built to process the MMRF CoMMpass Dataset and allows re
 Access to the MMRF CoMMpass data is through the [MMRF Researcher Gateway](https://research.themmrf.org/). You must first register using your institutional email to receive access. Once you have access, please download the FlatFiles and the associated dictionaries as well as the file, ```MMRF_CoMMpass_IA15_Seq_QC_Summary.csv``` and ```MMRF_CoMMpass_IA15a_E74GTF_Cufflinks_Gene_FPKM.txt```. The latter files will be necessary for processing of the genetic data.
 
 ## Instructions 
-* Enter the folder ml_mmrf_v2.
+* Enter the folder ml_mmrf.
 * Run the code in `requirements.sh` to setup the relevant packages you will need in order to setup the data.
 * Sign up on the MMRF Gateway linked above to receive access to the data and then download FlatFiles.
 * Finally, run ```python ml_mmrf_v2/core/build_mmrf_dataset.py --fdir [PATH TO FLATFILES] --outcomes_type [OUTCOMES_TYPE (mortality or trt_resp)]``` to create the data tensors from the raw MMRF flatfiles. Note that there are additional arguments you can specify, although this is not strictly necessary. Please see the script for details.
