@@ -57,7 +57,7 @@ def get_sequential_tensor(df, id_col, feature_name, day_start, day_end = None, g
     print ('\ttget_sequential_tensor: output shapes:',patient_ids.shape, feature_data.shape, obs_data.shape)
     return patient_ids, (feature_data, obs_data)
 
-def parse_labs(df_pp, granularity = 30, maxT=66, add_synthetic_marker=False):
+def parse_labs(df_pp, granularity = 30, maxT=66, add_kl_ratio=False):
     """
     Use patient_visit file to extract lab data
     """
@@ -93,9 +93,22 @@ def parse_labs(df_pp, granularity = 30, maxT=66, add_synthetic_marker=False):
         ndata[:,[0]] = subset_data[idx]
         nobs         = results_data[fname][1]
         nobs[:,[0]]  = 1.
-        results_data[fname] = (ndata, nobs)
-        
+        results_data[fname] = (ndata, nobs)     
     pids, data_tensor, obs_tensor = merge_on_pids(df.PUBLIC_ID.unique(), results_pids, results_data)
+    lnames = lab_names.tolist()
+    kappa_idx   = lnames.index('serum_kappa'); lambda_idx = lnames.index('serum_lambda')
+    data_tensor[...,[kappa_idx]] = np.abs(data_tensor[...,[kappa_idx]])
+    if add_kl_ratio:     
+        kl_tensor   = data_tensor[...,[kappa_idx]] / (data_tensor[...,[lambda_idx]]+1e-5)
+        kl_obs_tensor= obs_tensor[...,[kappa_idx]]*obs_tensor[...,[lambda_idx]]
+        kl_tensor[np.where(kl_obs_tensor==0.)] = 0.
+        for i in range(kl_tensor.shape[0]): 
+            kl_median = np.median(kl_tensor[i][np.where(kl_obs_tensor[i]==1.)].squeeze())
+            maxval = (2.5*(1+kl_median))
+            np.clip(kl_tensor[i],a_min=None,a_max=500.,out=kl_tensor[i])
+        data_tensor = np.concatenate((data_tensor, kl_tensor),axis=-1)
+        obs_tensor  = np.concatenate((obs_tensor, kl_obs_tensor),axis=-1)
+        lab_names   = np.concatenate((lab_names,np.array(['kl_ratio'])))
     print ('parse_labs:',len(pids), data_tensor.shape, obs_tensor.shape)
     for mn,mx,fn in zip(np.nanmin(data_tensor, axis=(0,1)), np.nanmax(data_tensor, axis=(0,1)), lab_names):
         print ('parse_labs (name/min/max)',fn,mn,mx)

@@ -22,7 +22,8 @@ from utils import *
 from argparse import ArgumentParser
 
 
-def main(args, save_intermediates=True): 
+def main(args, save_intermediates=True):
+    print('DONT FORGET TO CHANGE KAPPA VAL FROM NEG TO POS!!!!')
     mm_parser = MMRFParser(**vars(args))
     mm_parser.load_files()
     # parse, parse, parse

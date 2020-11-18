@@ -25,7 +25,6 @@ def clean_baseline(new_dset, healthy_mins_max):
     print ('C] After cleaning')
     for i,f in enumerate(new_dset['baseline_names']):
         print (i,f,new_dset['baseline_data_clean'][:,i].min(),new_dset['baseline_data_clean'][:,i].mean(),new_dset['baseline_data_clean'][:,i].max(),np.any(np.isnan(new_dset['baseline_data_clean'])))
-
         
 def clean_labs(new_dset, healthy_mins_max):
     print ('A] Before cleaning')
@@ -45,8 +44,6 @@ def clean_labs(new_dset, healthy_mins_max):
     print ('C] After cleaning')
     for i,f in enumerate(new_dset['labs_names']):
         print (i,f,np.nanmin(new_dset['labs_data_clean'][...,i]),np.nanmean(new_dset['labs_data_clean'][...,i]),np.nanmax(new_dset['labs_data_clean'][...,i]))
-
-
         
 def split_balanced(idx_list, event, trfrac = 0.7):
     print ('Total: ',idx_list.shape[0])
