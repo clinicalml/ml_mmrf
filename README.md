@@ -1,5 +1,8 @@
 # Machine Learning with Multiple Myeloma Research Foundation CoMMpass Dataset (ML-MMRF)
 
+![](data_fig.pdf)
+**Figure 1** - Example of Patient Data Post-Processing w/ ML-MMRF: Illustration of data from a multiple myeloma patient. Baseline (static) data typically consists of genomics, demographics, and initial labs. Longitudinal data typically includes laboratory values (e.g. serum IgG) and treatments. Baseline data is usually complete, but longitudinal measurements are frequently missing at various time points. The data tells a rich story of a patient's disease trajectory and the resulting treatment decisions. For example, a deviation of a lab value from a healthy range (e.g. spike in serum IgG) might prompt a move to the next line of therapy. Missing data (e.g. points in red) in this case are forward filled.
+
 ## Overview
 The Multiple Myeloma Research Foundation (MMRF) CoMMpass registry contains longitudinal data for over 1000 newly diagnosed multiple myeloma patients. Researchers track these patients from initial diagnosis through their course of treatment over a minimum of 5 years, capturing patient lab values, treatments, and complications. In addition to these data, there is a rich store of biological and demographic data of each patient at baseline, including RNA-seq, cytogenetics, and survey (e.g. Quality of Life) data. 
 
