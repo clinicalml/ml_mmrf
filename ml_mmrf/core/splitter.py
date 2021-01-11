@@ -36,7 +36,7 @@ class MMRFSplitter:
         self.train_valid_folds = None
         self.testidx = None
 
-    def split_balanced_general(self, idx_list, event, trfrac = .7): 
+    def split_balanced_general(self, idx_list, event, trfrac = .75): 
         '''    
         Helper function that splits a list of indices into training and validate indices balanced on 
         some set of outcomes. 
@@ -88,23 +88,22 @@ class MMRFSplitter:
         '''
         # train_valid_folds, testidx = get_splits(new_dset['event_obs'], nfolds=5)
         np.random.seed(0)
-        if self.outcomes_type == 'mortality': 
-            event_obs = self.dset['event_obs']
-        else: 
-            event_obs = self.dset['y_data']
+#             event_obs = self.dset['y_data']
+        event_obs = self.dset['event_obs']
         idx_list  = np.arange(event_obs.shape[0])
         trainidx, testidx = self.split_balanced_general(idx_list, event_obs)
 
-        folds_idx = {}
+        folds_idx = {}; pids = {}
         for fold in range(nfolds):
             idx_list = np.arange(trainidx.shape[0])
             event_fold= event_obs[trainidx]
             fi_idx_train, fi_idx_valid = self.split_balanced_general(idx_list, event_fold)
             fi_tr, fi_va = trainidx[fi_idx_train], trainidx[fi_idx_valid]
             folds_idx[fold] = (fi_tr, fi_va)
+            pids[fold] = np.concatenate((self.dset['patient_ids'][fi_tr],self.dset['patient_ids'][fi_va]))
             print ('Fold: ',fold,fi_idx_train.shape[0], fi_idx_valid.shape[0])
             print ('Event obs: ',event_obs[fi_tr].sum(), event_obs[fi_va].sum())
-        self.train_valid_pids  = np.concatenate((self.dset['patient_ids'][folds_idx[0][0]],self.dset['patient_ids'][folds_idx[0][1]]))
+        self.train_valid_pids  = pids
         self.test_pids         = self.dset['patient_ids'][testidx]
         self.train_valid_folds = folds_idx 
         self.testidx = testidx

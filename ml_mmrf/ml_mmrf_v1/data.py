@@ -215,12 +215,6 @@ def load_mmrf(fold_span = range(5), suffix='', digitize_K = 0, digitize_method =
                     f = new_dset[fold][k]['x'][...,x_names.index(name)][:,:,np.newaxis]
                     m = new_dset[fold][k]['m'][...,x_names.index(name)][:,:,np.newaxis]
                     fs.append(f); ms.append(m)
-#                 f1      = new_dset[fold][k]['x'][...,x_names.index('serum_m_protein')][:,:,np.newaxis]
-#                 f2      = new_dset[fold][k]['x'][...,x_names.index('syn_marker')][:,:,np.newaxis]
-#                 m1      = new_dset[fold][k]['m'][...,x_names.index('serum_m_protein')][:,:,np.newaxis]
-#                 m2      = new_dset[fold][k]['m'][...,x_names.index('syn_marker')][:,:,np.newaxis]
-#                 new_dset[fold][k]['x'] = np.concatenate((f1,f2),axis=-1)
-#                 new_dset[fold][k]['m'] = np.concatenate((m1,m2),axis=-1)
                 new_dset[fold][k]['x'] = np.concatenate(tuple(fs),axis=-1)
                 new_dset[fold][k]['m'] = np.concatenate(tuple(ms),axis=-1)
                 new_dset[fold][k]['feature_names_x'] = np.array(restrict_markers)

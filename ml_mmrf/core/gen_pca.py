@@ -10,7 +10,7 @@ import warnings
 def gen_pca_embeddings(ia_version='ia15', \
                        train_test_file=None, \
                        write_to_csv=False, \
-                       write_csv_fname='PCA.csv', \
+                       write_csv_fname='ia15_pca_embeddings.csv', \
                        FDIR_sh   = '/afs/csail.mit.edu/group/clinicalml/datasets/multiple_myeloma/ia15'):
 
     qc_path   = os.path.join(FDIR_sh,f'MMRF_CoMMpass_{ia_version.upper()}_Seq_QC_Summary.csv')
@@ -62,6 +62,7 @@ def gen_pca_embeddings(ia_version='ia15', \
     else: 
         with open(train_test_file,'rb') as f:
             _, _, trainidx, testidx = pickle.load(f)
+            trainidx = trainidx[0]
         trainidx = [x + '_1_BM' for x in trainidx]
         testidx  = [x + '_1_BM' for x in testidx]
         remaining_idxs = []

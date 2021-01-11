@@ -23,15 +23,14 @@ from argparse import ArgumentParser
 
 
 def main(args, save_intermediates=True):
-    print('DONT FORGET TO CHANGE KAPPA VAL FROM NEG TO POS!!!!')
     mm_parser = MMRFParser(**vars(args))
     mm_parser.load_files()
     # parse, parse, parse
     mm_parser.parse_treatments() 
-    mm_parser.parse_labs()
+    mm_parser.parse_labs(add_kl_ratio=False, add_pd_feats=False)
     mm_parser.parse_baseline()
     mm_parser.parse_outcomes()
-    mm_parser.parse_trt_outcomes(from_gateway=True)
+    mm_parser.parse_trt_outcomes()
     dataset = mm_parser.get_parsed_data()
     print(dataset.keys())
     
@@ -70,7 +69,7 @@ if __name__ == '__main__':
     parser = ArgumentParser()
     parser.add_argument('--fdir', type=str, default='/afs/csail.mit.edu/group/clinicalml/datasets/multiple_myeloma/ia15/CoMMpass_IA15_FlatFiles', help='path to MMRF flat files')
     parser.add_argument('--ia_version', type=str, default='ia15', help='version of MMRF data')
-    parser.add_argument('--outcomes_type', type=str, default='mortality', help='what outcome to balance train/test on + which outcome to store in Y; mortality or tr')
+    parser.add_argument('--outcomes_type', type=str, default='mortality', help='what outcome to balance train/test on + which outcome to store in Y; mortality or trt_resp')
     parser.add_argument('--granularity', type=int, default=60, help='specifies the granularity of time with which you wish to process the data (e.g. 60 means time between time step t and time step t+1 is 60 days or 2 months)')
     parser.add_argument('--maxT', type=int, default=33, help='max time step at which to stop processing longitudinal data at the above granularity')
     args = parser.parse_args()

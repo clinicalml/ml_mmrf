@@ -35,7 +35,13 @@ healthy_mins_max = {
     'serum_lambda':(0.57, 2.63, 1/2.), #serum lambda, (1.6, 0.515)
     'serum_kappa':(.33, 1.94,1/8.), #serum kappa , (1.135, 0.403)
     'serum_beta2_microglobulin':(0.7, 1.80, 1/3.), #serum_beta2_microglobulin,
-    'serum_c_reactive_protein':(0.0, 1., 1.) #serum_c_reactive_protein,
+    'serum_c_reactive_protein':(0.0, 1., 1.), #serum_c_reactive_protein,
+    'kl_ratio': (.26, 1.65, 1/60.), 
+    'SERUMMCOMPONE': (0.,0.,1.), # don't scale the binary features 
+    'URINEMCOMPONE': (0.,0.,1.),
+    'ONLYINPATIENT': (0.,0.,1.), 
+    'ONLYINPATIENT2': (0.,0.,1.),
+    'DEVELOPMENTOF': (0.,0.,1.)
 }
 
 class MMRFCleaner:
@@ -125,9 +131,9 @@ class MMRFCleaner:
         # Gender = -1,1
         self.clean_dset['baseline_data_clean'][:,2]   = self.clean_dset['baseline_data_clean'][:,2]*2-3
         # Mean and standard deviation normalize PCA features
-        pca_mean = self.clean_dset['baseline_data_clean'][:,4:11].mean(0,keepdims=True)
-        pca_std  = np.std(self.clean_dset['baseline_data_clean'][:,4:11], keepdims=True)
-        self.clean_dset['baseline_data_clean'][:,4:11] = (self.clean_dset['baseline_data_clean'][:,4:11]-pca_mean)/pca_std
+        pca_mean = self.clean_dset['baseline_data_clean'][:,3:10].mean(0,keepdims=True)
+        pca_std  = np.std(self.clean_dset['baseline_data_clean'][:,3:10], keepdims=True)
+        self.clean_dset['baseline_data_clean'][:,3:10] = (self.clean_dset['baseline_data_clean'][:,3:10]-pca_mean)/pca_std
         
         print ('------')
         print ('B] After cleaning')
