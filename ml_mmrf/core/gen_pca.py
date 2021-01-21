@@ -11,16 +11,21 @@ def gen_pca_embeddings(ia_version='ia15', \
                        train_test_file=None, \
                        write_to_csv=False, \
                        write_csv_fname='ia15_pca_embeddings.csv', \
-                       FDIR_sh   = '/afs/csail.mit.edu/group/clinicalml/datasets/multiple_myeloma/ia15'):
+                       FDIR_sh   = None):
 
-    qc_path   = os.path.join(FDIR_sh,f'MMRF_CoMMpass_{ia_version.upper()}_Seq_QC_Summary.csv')
+    qc_path   = os.path.join(FDIR_sh,f'MMRF_CoMMpass_{ia_version.upper()}_Seq_QC_Summary.xlsx')
     fpkm_path = os.path.join(FDIR_sh,f'MMRF_CoMMpass_{ia_version.upper()}a_E74GTF_Cufflinks_Gene_FPKM.txt')
-    genref_path = os.path.join(FDIR_sh,f'GRCh37.p13_E92_mart_export.txt')
+    dir_path = os.path.dirname(os.path.realpath(__file__))
+    genref_path = os.path.join(dir_path,f'GRCh37.p13_E92_mart_export.txt')
 
     # load in files
     data_files = {}
     fpkm_df = pd.read_table(fpkm_path, encoding='latin-1')
-    design_df = pd.read_csv(qc_path, delimiter=',', encoding='latin-1')
+    if qc_path.endswith('csv'):
+        design_df = pd.read_csv(qc_path, delimiter=',', encoding='latin-1')
+    else:
+        design_df = pd.read_excel(qc_path)
+
     design_df['sampleID'] = design_df['QC Link SampleName'].apply(lambda x: x.split('_')).apply(lambda x: '_'.join(x[:4]))
     design_df['cellType'] = design_df['QC Link SampleName'].apply(lambda x: x.split('_')).apply(lambda x: '_'.join(x[3:5]))
 

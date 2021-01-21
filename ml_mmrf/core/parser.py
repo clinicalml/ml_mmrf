@@ -52,13 +52,15 @@ class MMRFParser:
             None
         '''
         self.data_files = {}
-        for fullname in glob.glob(self.fdir+'/*.csv'):
+        fdir = os.path.join(self.fdir,'CoMMpass_'+self.ia_version.upper()+'_FlatFiles/*.csv') 
+        print ('Searching for files that match',fdir)
+        for fullname in glob.glob(fdir):
             print (fullname)
             fname = os.path.basename(fullname).split('.')[0]
-            if 'MMRF_CoMMpass_IA13_' in fname:
-                kname = fname.split('MMRF_CoMMpass_IA13_')[1]
-            elif 'MMRF_CoMMpass_IA15_' in fname:
-                kname = fname.split('MMRF_CoMMpass_IA15_')[1]
+            if 'CoMMpass_IA13_' in fname:
+                kname = fname.split('CoMMpass_IA13_')[1]
+            elif 'CoMMpass_IA15_' in fname:
+                kname = fname.split('CoMMpass_IA15_')[1]
             else: 
                 kname = fname
             self.data_files[kname] = pd.read_csv(fullname, delimiter=',', encoding='latin-1')
@@ -264,10 +266,10 @@ class MMRFParser:
         merged.fillna(merged.mean(0), axis=0, inplace = True)
         if os.path.exists(f'../output/folds_{self.outcomes_type}.pkl'): 
             print('[generating pca embeddings using pickled folds]')
-            genetic_data = gen_pca_embeddings(train_test_file=f'../output/folds_{self.outcomes_type}.pkl')
+            genetic_data = gen_pca_embeddings(train_test_file=f'../output/folds_{self.outcomes_type}.pkl', FDIR_sh=self.fdir)
         else: 
             print('[generating pca embeddings using random train/test split]')
-            genetic_data = gen_pca_embeddings(train_test_file=None)
+            genetic_data = gen_pca_embeddings(train_test_file=None, FDIR_sh=self.fdir)
 #         print('[reading in pca embeddings from ia13 csv.]')
 #         genetic_data = pd.read_csv('./ia13_pca_embeddings.csv', delimiter=',') 
         genetic_data = genetic_data[['PUBLIC_ID','PC1','PC2','PC3','PC4','PC5']]

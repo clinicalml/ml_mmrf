@@ -73,7 +73,7 @@ if __name__ == '__main__':
     parser.add_argument('--granularity', type=int, default=60, help='specifies the granularity of time with which you wish to process the data (e.g. 60 means time between time step t and time step t+1 is 60 days or 2 months)')
     parser.add_argument('--maxT', type=int, default=33, help='max time step at which to stop processing longitudinal data at the above granularity')
     args = parser.parse_args()
-    assert args.ia_version in args.fdir, 'ia version and version associated with flatfiles do not match'
+    #assert args.ia_version in args.fdir, 'ia version and version associated with flatfiles do not match'
     np.random.seed(0)
     main(args)
 

@@ -9,13 +9,15 @@ ML-MMRF is a repository built to process the MMRF CoMMpass Dataset and allows re
 **Figure 1** - Example of Patient Data Post-Processed w/ ML-MMRF: Illustration of data from a multiple myeloma patient. Baseline (static) data typically consists of genomics, demographics, and initial labs. Longitudinal data typically includes laboratory values (e.g. serum IgG) and treatments. Baseline data is usually complete, but longitudinal measurements are frequently missing at various time points. The data tells a rich story of a patient's disease trajectory and the resulting treatment decisions. For example, a deviation of a lab value from a healthy range (e.g. spike in serum IgG) might prompt a move to the next line of therapy. Missing data (e.g. points in red) in this case are forward filled.
 
 ## Data Access 
-Access to the MMRF CoMMpass data is through the [MMRF Researcher Gateway](https://research.themmrf.org/). You must first register using your institutional email to receive access. Once you have access, please download the FlatFiles and the associated dictionaries as well as the file, ```MMRF_CoMMpass_IA15_Seq_QC_Summary.csv``` and ```MMRF_CoMMpass_IA15a_E74GTF_Cufflinks_Gene_FPKM.txt```. The latter files will be necessary for processing of the genetic data.
+Access to the MMRF CoMMpass data is through the [MMRF Researcher Gateway](https://research.themmrf.org/). You must first register using your institutional email to receive access. Once you have access, please download the FlatFiles and the associated dictionaries as well as the file, ```MMRF_CoMMpass_IA15_Seq_QC_Summary.xlsx``` and ```MMRF_CoMMpass_IA15a_E74GTF_Cufflinks_Gene_FPKM.txt```. The latter files will be necessary for processing of the genetic data.
 
 ## Instructions 
 * Enter the folder ml_mmrf.
 * Run the code in `requirements.sh` to setup the relevant packages you will need in order to setup the data.
 * Sign up on the MMRF Gateway linked above to receive access to the data and then download FlatFiles.
-* Finally, run ```python ml_mmrf/core/build_mmrf_dataset.py --fdir [PATH TO FLATFILES] --outcomes_type [OUTCOMES_TYPE (mortality or trt_resp)]``` to create the data tensors from the raw MMRF flatfiles. Note that there are additional arguments you can specify, although this is not strictly necessary. Please see the script for details.
+* Finally, go to the ``core`` folder and run:
+```python build_mmrf_dataset.py --fdir [PATH TO FLATFILES] --outcomes_type [OUTCOMES_TYPE (mortality or trt_resp)] --ia_version IA15``` 
+to create the data tensors from the raw MMRF flatfiles. Note that there are additional arguments you can specify, although this is not strictly necessary. Please see the script for details.
 
 ## Methods 
 After data processing, we recommend going through the provided jupyter notebook, "3_SanityCheckData.ipynb" to verify that the tensors have been created properly. Below, we detail the specific aspects of the outer level build script. 
