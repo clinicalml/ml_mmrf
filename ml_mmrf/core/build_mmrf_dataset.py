@@ -22,7 +22,7 @@ from utils import *
 from argparse import ArgumentParser
 
 
-def main(args, save_intermediates=True):
+def main(args, save_intermediates=True, recreate_splits = False):
     mm_parser = MMRFParser(**vars(args))
     mm_parser.load_files()
     # parse, parse, parse
@@ -48,7 +48,7 @@ def main(args, save_intermediates=True):
     mm_splitter = MMRFSplitter(clean_dataset, outcomes_type)
     nfolds = 5
     mm_splitter.split_data(nfolds=nfolds)
-    if save_intermediates: 
+    if recreate_splits: 
         train_valid_folds, testidx, trainvalid_pids, test_pids = mm_splitter.get_splits()
         with open(f'../output/folds_{outcomes_type}.pkl','wb') as f:
             pickle.dump((train_valid_folds, testidx, trainvalid_pids, test_pids),f)
@@ -75,7 +75,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
     #assert args.ia_version in args.fdir, 'ia version and version associated with flatfiles do not match'
     np.random.seed(0)
-    main(args)
+    main(args, recreate_splits = False)
 
     
     
