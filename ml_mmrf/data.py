@@ -48,20 +48,19 @@ def digitize_outcomes(Y, Yvalid, Ytest, Ymax, K, method='quantiles'):
     assert predict.shape[0]==K,'Expecting K categories'
     return Ytr, Yva, Yte, predict
 
-def load_mmrf_quick(fold_span = range(5), suffix=''):
+def load_mmrf_quick(fold_span = range(5), fval=None):
     """
     Helper function to load in data tensors from pkl files.
     
     Args: 
         fold_span: list of folds that we wish to select 
-        suffix: string that might appear in .pkl file names (e.g. _2mos), used to define path to 
-        pickle files 
+        fval: path to cleaned output files
     Returns: 
         dset_rest: returns data dictionary with folds and corresponding train, test, and validation
         sets.
     """
-    dir_path = os.path.dirname(os.path.realpath(__file__))
-    fval     = os.path.join(dir_path, 'output/cleaned_mm_fold'+suffix+'.pkl')
+#     dir_path = os.path.dirname(os.path.realpath(__file__))
+#     fval     = os.path.join(dir_path, 'output/cleaned_mm_fold'+suffix+'.pkl')
     print( 'loading from:', fval)
     dset_rest = {}
     for foldnum in fold_span:
@@ -71,7 +70,7 @@ def load_mmrf_quick(fold_span = range(5), suffix=''):
         dset_rest[foldnum] = dset[foldnum]
     return dset_rest
 
-def load_mmrf(fold_span = range(5), suffix='', digitize_K = 0, digitize_method = 'uniform', \
+def load_mmrf(fold_span = range(5), data_dir=None, digitize_K = 0, digitize_method = 'uniform', \
               subsample = False, add_syn_marker=False, restrict_markers=[], \
               window='all', data_aug=False, ablation=False, feats=[]):
     """
@@ -96,7 +95,7 @@ def load_mmrf(fold_span = range(5), suffix='', digitize_K = 0, digitize_method =
         new_dset: returns data dictionary with folds and corresponding train, test, and validation
         sets.
     """
-    new_dset = load_mmrf_quick(fold_span = fold_span, suffix=suffix)
+    new_dset = load_mmrf_quick(fold_span = fold_span, fval=data_dir)
     
     # Make sure we only see data up to maxT
     for fold in fold_span:
@@ -253,13 +252,9 @@ def load_mmrf(fold_span = range(5), suffix='', digitize_K = 0, digitize_method =
             'all': (0,15), 
             'demog': (1,3),
             'iss': (0,4),
-#             'pc': (0,9),
-            'pc': (5,9),
-#             'hc': (0,10),
-            'hc': (5,10),
-#             'igg': (0,13), 
-            'igg': (5,13), 
-#             'all': (5,15),
+            'pc': (0,9),
+            'hc': (0,10),
+            'igg': (0,13), 
             'lc': (0,2),
             'bor': (0,2),
             'car': (0,2), 
