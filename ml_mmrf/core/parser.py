@@ -23,12 +23,14 @@ class MMRFParser:
     case is 60 days (2 months).
     '''
 
-    def __init__(self, fdir, ia_version, granularity, maxT, outcomes_type):
+    def __init__(self, fdir, ia_version, granularity, maxT, outcomes_type, recreate_splits, featset='full'):
         self.fdir = fdir 
         self.ia_version  = ia_version
         self.granularity = granularity
         self.maxT        = maxT
-        self.outcomes_type = outcomes_type
+        self.outcomes_type  = outcomes_type
+        self.recreate_splits= recreate_splits
+        self.featset = featset
 
         # set up dictionary for dataset
         self.dataset = {}
@@ -148,11 +150,15 @@ class MMRFParser:
             lab_names: names of the labs
         """
         df_pp = self.data_files['PER_PATIENT_VISIT']; granularity = self.granularity; maxT = self.maxT
-#         lab_names = ['D_LAB_cbc_abs_neut', 'D_LAB_chem_albumin', 'D_LAB_chem_bun', 'D_LAB_chem_calcium', 'D_LAB_chem_creatinine',
-#             'D_LAB_chem_glucose', 'D_LAB_cbc_hemoglobin', 'D_LAB_serum_kappa', 'D_LAB_serum_m_protein', 'D_LAB_cbc_platelet',
-#             'D_LAB_chem_totprot', 'D_LAB_cbc_wbc', 'D_LAB_serum_iga', 'D_LAB_serum_igg', 'D_LAB_serum_igm','D_LAB_serum_lambda']
-        lab_names = ['D_LAB_serum_kappa', 'D_LAB_serum_m_protein', 'D_LAB_serum_iga', \
+        if self.featset == 'full': 
+            lab_names = ['D_LAB_cbc_abs_neut', 'D_LAB_chem_albumin', 'D_LAB_chem_bun', 'D_LAB_chem_calcium', 'D_LAB_chem_creatinine',
+                'D_LAB_chem_glucose', 'D_LAB_cbc_hemoglobin', 'D_LAB_serum_kappa', 'D_LAB_serum_m_protein', 'D_LAB_cbc_platelet',
+                'D_LAB_chem_totprot', 'D_LAB_cbc_wbc', 'D_LAB_serum_iga', 'D_LAB_serum_igg', 'D_LAB_serum_igm','D_LAB_serum_lambda']
+        elif self.featset == 'serum_igs': 
+            lab_names = ['D_LAB_serum_kappa', 'D_LAB_serum_m_protein', 'D_LAB_serum_iga', \
                  'D_LAB_serum_igg', 'D_LAB_serum_igm','D_LAB_serum_lambda', 'D_LAB_urine_24hr_m_protein']
+        else: 
+            assert self.featset in ['full', 'serum_igs'], 'invalid featset specified'
         pd_names = ['AT_SERUMMCOMPONE', 'AT_URINEMCOMPONE', 'AT_ONLYINPATIENT', 'AT_ONLYINPATIENT2', 'AT_DEVELOPMENTOF']
         if add_pd_feats: 
             df = df_pp[['PUBLIC_ID','VISIT','VISITDY']+lab_names+pd_names]

@@ -15,6 +15,7 @@ import numpy as np
 import pickle
 import warnings
 from fancyimpute import KNN as KNN_impute
+from distutils.util import strtobool
 from parser import MMRFParser
 from cleaner import MMRFCleaner
 from splitter import MMRFSplitter
@@ -22,7 +23,7 @@ from utils import *
 from argparse import ArgumentParser
 
 
-def main(args, save_intermediates=True, recreate_splits = False):
+def main(args, save_intermediates=True):
     mm_parser = MMRFParser(**vars(args))
     mm_parser.load_files()
     # parse, parse, parse
@@ -47,11 +48,7 @@ def main(args, save_intermediates=True, recreate_splits = False):
     # split, split, split 
     mm_splitter = MMRFSplitter(clean_dataset, outcomes_type)
     nfolds = 5
-    mm_splitter.split_data(nfolds=nfolds)
-    if recreate_splits: 
-        train_valid_folds, testidx, trainvalid_pids, test_pids = mm_splitter.get_splits()
-        with open(f'../output/folds_{outcomes_type}.pkl','wb') as f:
-            pickle.dump((train_valid_folds, testidx, trainvalid_pids, test_pids),f)
+    mm_splitter.split_data(nfolds=nfolds, recreate_splits=args.recreate_splits)
 
     final_datasets = mm_splitter.get_split_data()
     if save_intermediates: 
@@ -67,15 +64,17 @@ def main(args, save_intermediates=True, recreate_splits = False):
 if __name__ == '__main__':
     # get path to ML_MMRF files 
     parser = ArgumentParser()
-    parser.add_argument('--fdir', type=str, default='/afs/csail.mit.edu/group/clinicalml/datasets/multiple_myeloma/ia15/CoMMpass_IA15_FlatFiles', help='path to MMRF flat files')
-    parser.add_argument('--ia_version', type=str, default='ia15', help='version of MMRF data')
+    parser.add_argument('--fdir', type=str, default='/afs/csail.mit.edu/group/clinicalml/datasets/multiple_myeloma/ia15', help='path to MMRF flat files')
+    parser.add_argument('--ia_version', type=str, default='IA15', help='version of MMRF data')
     parser.add_argument('--outcomes_type', type=str, default='mortality', help='what outcome to balance train/test on + which outcome to store in Y; mortality or trt_resp')
     parser.add_argument('--granularity', type=int, default=60, help='specifies the granularity of time with which you wish to process the data (e.g. 60 means time between time step t and time step t+1 is 60 days or 2 months)')
     parser.add_argument('--maxT', type=int, default=33, help='max time step at which to stop processing longitudinal data at the above granularity')
+    parser.add_argument('--recreate_splits', type=strtobool, default=False, help='if you want to recreate folds, then set to True')
+    parser.add_argument('--featset', type=str, default='full', help='subset of features to save; support for one of ["full", "serum_igs"]')
     args = parser.parse_args()
     #assert args.ia_version in args.fdir, 'ia version and version associated with flatfiles do not match'
     np.random.seed(0)
-    main(args, recreate_splits = False)
+    main(args)
 
     
     

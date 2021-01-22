@@ -72,7 +72,7 @@ class MMRFSplitter:
             valist += idx_val.tolist()
         return np.array(trlist), np.array(valist)
         
-    def split_data(self, nfolds = 5):
+    def split_data(self, nfolds = 5, recreate_splits=True):
         '''    
         Main function that splits the data into training and test sets, and then 
         the training set into five folds. Note that there is a single (global) test 
@@ -87,25 +87,37 @@ class MMRFSplitter:
             nfolds: number of folds to split training data
         '''
         # train_valid_folds, testidx = get_splits(new_dset['event_obs'], nfolds=5)
+        
         np.random.seed(0)
-#             event_obs = self.dset['y_data']
-        event_obs = self.dset['event_obs']
-        idx_list  = np.arange(event_obs.shape[0])
-        trainidx, testidx = self.split_balanced_general(idx_list, event_obs)
+        if recreate_splits: 
+            event_obs = self.dset['event_obs']
+            idx_list  = np.arange(event_obs.shape[0])
+            trainidx, testidx = self.split_balanced_general(idx_list, event_obs)
 
-        folds_idx = {}; pids = {}
-        for fold in range(nfolds):
-            idx_list = np.arange(trainidx.shape[0])
-            event_fold= event_obs[trainidx]
-            fi_idx_train, fi_idx_valid = self.split_balanced_general(idx_list, event_fold)
-            fi_tr, fi_va = trainidx[fi_idx_train], trainidx[fi_idx_valid]
-            folds_idx[fold] = (fi_tr, fi_va)
-            pids[fold] = np.concatenate((self.dset['patient_ids'][fi_tr],self.dset['patient_ids'][fi_va]))
-            print ('Fold: ',fold,fi_idx_train.shape[0], fi_idx_valid.shape[0])
-            print ('Event obs: ',event_obs[fi_tr].sum(), event_obs[fi_va].sum())
-        self.train_valid_pids  = pids
-        self.test_pids         = self.dset['patient_ids'][testidx]
-        self.train_valid_folds = folds_idx 
+            folds_idx = {}; pids = {}
+            for fold in range(nfolds):
+                idx_list = np.arange(trainidx.shape[0])
+                event_fold= event_obs[trainidx]
+                fi_idx_train, fi_idx_valid = self.split_balanced_general(idx_list, event_fold)
+                fi_tr, fi_va = trainidx[fi_idx_train], trainidx[fi_idx_valid]
+                folds_idx[fold] = (fi_tr, fi_va)
+                pids[fold] = np.concatenate((self.dset['patient_ids'][fi_tr],self.dset['patient_ids'][fi_va]))
+                print ('Fold: ',fold,fi_idx_train.shape[0], fi_idx_valid.shape[0])
+                print ('Event obs: ',event_obs[fi_tr].sum(), event_obs[fi_va].sum())
+            
+            train_valid_pids  = pids
+            train_valid_folds = folds_idx; test_pids = self.dset['patient_ids'][testidx]
+            print('[Saving splits in .pkl]')
+            with open(f'../output/folds_{self.outcomes_type}.pkl','wb') as f:
+                pickle.dump((train_valid_folds, testidx, train_valid_pids, test_pids),f)
+        else: 
+            print('[Reading in splits]')
+            with open(f'../output/folds_{self.outcomes_type}.pkl', 'rb') as f: 
+                train_valid_folds, testidx, train_valid_pids, test_pids = pickle.load(f)
+            
+        self.train_valid_pids  = train_valid_pids
+        self.test_pids         = test_pids
+        self.train_valid_folds = train_valid_folds
         self.testidx = testidx
         self.nfolds  = nfolds
 
