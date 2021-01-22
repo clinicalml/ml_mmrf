@@ -16,7 +16,7 @@ Access to the MMRF CoMMpass data is through the [MMRF Researcher Gateway](https:
 * Run the code in `requirements.sh` to setup the relevant packages you will need in order to setup the data.
 * Sign up on the MMRF Gateway linked above to receive access to the data and then download FlatFiles.
 * Finally, go to the ``core`` folder and run:
-```python build_mmrf_dataset.py --fdir [PATH TO FLATFILES] --outcomes_type [OUTCOMES_TYPE (mortality or trt_resp)] --ia_version IA15``` 
+```python build_mmrf_dataset.py --fdir [PATH TO FLATFILES] --outcomes_type [OUTCOMES_TYPE (mortality or trt_resp)] --ia_version IA15 --recreate_splits False``` 
 to create the data tensors from the raw MMRF flatfiles. Note that there are additional arguments you can specify, although this is not strictly necessary. Please see the script for details.
 
 ## Methods 
