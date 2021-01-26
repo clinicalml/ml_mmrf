@@ -23,7 +23,7 @@ class MMRFParser:
     case is 60 days (2 months).
     '''
 
-    def __init__(self, fdir, ia_version, granularity, maxT, outcomes_type, recreate_splits, featset='full'):
+    def __init__(self, fdir, ia_version, granularity, maxT, outcomes_type, recreate_splits, featset='full', trtrep='ind'):
         self.fdir = fdir 
         self.ia_version  = ia_version
         self.granularity = granularity
@@ -31,6 +31,8 @@ class MMRFParser:
         self.outcomes_type  = outcomes_type
         self.recreate_splits= recreate_splits
         self.featset = featset
+        # ind: individual treatments, comb2: combination vector, comb3: combination vector + ASCT, comb4: more granular combination vector + ASCT
+        self.trtrep  =  trtrep
 
         # set up dictionary for dataset
         self.dataset = {}
@@ -81,6 +83,26 @@ class MMRFParser:
         '''
         return self.dataset
 
+    def add_asct(self, treatment_df): 
+        treatment_df.loc[:,'asct'] = np.where(pd.notnull(treatment_df.bmtx_day), 1, 0)
+        
+        # update to include up till end of line
+        asct = []
+        cur_pt = None; had_asct = False
+        for index, pt in treatment_df.iterrows():
+            row = pt[['public_id', 'asct']]
+            if cur_pt != pt['public_id']: 
+                cur_pt = pt['public_id']
+                had_asct = False
+            if pt['asct'] == 1: 
+                asct.append(1)
+                cur_pt = pt['public_id']; had_asct = True
+            elif cur_pt == pt['public_id'] and had_asct and pt['bmtx_rec'] != 0: 
+                asct.append(1)
+            else: 
+                asct.append(0)
+        treatment_df.loc[:,'asct'] = asct
+
     def parse_treatments(self):
         """
         We use treatment_response files to obtain treatments across time along with the line 
@@ -101,20 +123,46 @@ class MMRFParser:
             treatment_fname: names of the treatments includes + other features (such as line of therapy)
         """
         df_trtresp = self.data_files['STAND_ALONE_TRTRESP']; granularity = self.granularity; maxT = self.maxT
-        top_10_combinations = df_trtresp.trtshnm.value_counts()[:10].index.to_numpy()
-        treatments = []
-        for comb in top_10_combinations:
-            treatments += [k.strip() for k in comb.split('-')]
-        treatment_fname = np.array(np.unique(treatments).tolist())
-        print ('parse_treatments: treatments: ',treatment_fname)
-
+        
         # Restrict to relevant columns
-        treatment_df    = df_trtresp[['public_id','line','trtshnm','bmtx_day','trtstdy','trtendy']]
+        treatment_df    = df_trtresp[['public_id','line','trtshnm','trtclass','bmtx_day','bmtx_rec','trtstdy','trtendy']]
+        
+        if self.trtrep == 'ind': 
+            # only select top 10 treatments that appear in combinations 
+            top_10_combinations = df_trtresp.trtshnm.value_counts()[:10].index.to_numpy()
+            treatments = []
+            for comb in top_10_combinations:
+                treatments += [k.strip() for k in comb.split('-')]
+            treatment_fname = np.array(np.unique(treatments).tolist())
+            
+            # Create a binary indicator if treatment is in the set we know and care about
+            for fname in treatment_fname:
+                treatment_df.loc[:,fname] = np.where(treatment_df.trtshnm.str.contains(fname), 1, 0)
+        elif self.trtrep == 'comb3': 
+            all_comb_classes = df_trtresp.trtclass.value_counts().index.to_numpy()
+            treatment_fname = np.array(all_comb_classes[:6].tolist() + ['combined bortezomib/carfilzomib +/- IMIDs'])
+            for fname in treatment_fname: 
+                if '+/-' not in fname: 
+                    treatment_df.loc[:,fname] = np.where(treatment_df.trtclass == fname, 1, 0)
+                else: 
+                    treatment_df.loc[:,fname] = np.where((treatment_df.trtclass == 'combined bortezomib/IMIDs/carfilzomib-based') \
+                                                         | (treatment_df.trtclass == 'combined bortezomib/carfilzomib-based'), 1, 0)
+            self.add_asct(treatment_df)
+        elif self.trtrep == 'comb4': 
+            all_combinations = df_trtresp.trtshnm.value_counts().index.to_numpy()
+            treatment_fname = np.array(all_combinations[:10].tolist() + ['other']) 
+            for fname in treatment_fname: 
+                if fname != 'other': 
+                    treatment_df.loc[:,fname] = np.where(treatment_df.trtshnm==fname, 1, 0)
+                else: 
+                    treatment_df.loc[:,fname] = np.where(~treatment_df.trtshnm.isin(treatment_fname[:-1]), 1, 0)
+            treatment_fname = np.concatenate((treatment_fname, np.array(['asct'])))
+            self.add_asct(treatment_df)
+        else: 
+            raise ValueError('unsupported treatment representation given')
+            
 
-        # Create a binary indicator if treatment is in the set we know and care about
-        for fname in treatment_fname:
-            treatment_df.loc[:,fname] = np.where(treatment_df.trtshnm.str.contains(fname), 1, 0)
-
+        print ('parse_treatments: treatments: ',treatment_fname)
         # Include line in treatment list
         treatment_fname = np.array(treatment_fname.tolist()+['line'])
         print ('parse_treatments: adding line of therapy: ',treatment_fname)
@@ -126,7 +174,7 @@ class MMRFParser:
             results_pids[fname], results_data[fname] = get_sequential_tensor(treatment_df,'public_id',fname,'trtstdy','trtendy', granularity = granularity, maxT=maxT)
         pids, data_tensor, obs_tensor = merge_on_pids(treatment_df.public_id.unique(), results_pids, results_data)
         print ('parse_treatments:',len(pids), data_tensor.shape, obs_tensor.shape)
-
+        
         # Add parsed data to dataset dictionary 
         self.dataset['treatment']['pids'] = pids; self.dataset['treatment']['data'] = data_tensor
         self.dataset['treatment']['obs']  = obs_tensor; self.dataset['treatment']['names'] = treatment_fname

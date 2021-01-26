@@ -55,8 +55,9 @@ def main(args, save_intermediates=True):
         for fold in range(nfolds): 
             final_dataset = final_datasets[fold]
             fname = '../output/cleaned_mm'+str(fold)+'_2mos.pkl'
+            fname = f'../output/cleaned_mm{fold}_2mos_{args.trtrep}.pkl'
             if args.outcomes_type == 'trt_resp': 
-                fname = '../output/cleaned_mm'+str(fold)+'_2mos_tr.pkl'
+                fname = f'../output/cleaned_mm{fold}_2mos_tr_{args.trtrep}.pkl'
             with open(fname,'wb') as f:
                 pickle.dump(final_dataset, f)
     print('[---Processing Complete---]')
@@ -71,6 +72,7 @@ if __name__ == '__main__':
     parser.add_argument('--maxT', type=int, default=33, help='max time step at which to stop processing longitudinal data at the above granularity')
     parser.add_argument('--recreate_splits', type=strtobool, default=False, help='if you want to recreate folds, then set to True')
     parser.add_argument('--featset', type=str, default='full', help='subset of features to save; support for one of ["full", "serum_igs"]')
+    parser.add_argument('--trtrep', type=str, default='ind', help='type of treatment representation to use')
     args = parser.parse_args()
     #assert args.ia_version in args.fdir, 'ia version and version associated with flatfiles do not match'
     np.random.seed(0)
