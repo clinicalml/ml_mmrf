@@ -256,6 +256,8 @@ def load_mmrf(fold_span = range(5), data_dir=None, digitize_K = 0, digitize_meth
             'hc': (0,10),
             'igg': (0,13), 
             'lc': (0,2),
+            'comb_trts': (0,7),
+            'asct': (0,8),
             'bor': (0,2),
             'car': (0,2), 
             'cyc': (0,3),

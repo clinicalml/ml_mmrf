@@ -147,6 +147,7 @@ class MMRFParser:
                 else: 
                     treatment_df.loc[:,fname] = np.where((treatment_df.trtclass == 'combined bortezomib/IMIDs/carfilzomib-based') \
                                                          | (treatment_df.trtclass == 'combined bortezomib/carfilzomib-based'), 1, 0)
+            treatment_fname = np.concatenate((treatment_fname, np.array(['asct'])))
             self.add_asct(treatment_df)
         elif self.trtrep == 'comb4': 
             all_combinations = df_trtresp.trtshnm.value_counts().index.to_numpy()
@@ -320,10 +321,10 @@ class MMRFParser:
         merged.fillna(merged.mean(0), axis=0, inplace = True)
         if os.path.exists(f'../output/folds_{self.outcomes_type}.pkl'): 
             print('[generating pca embeddings using pickled folds]')
-            genetic_data = gen_pca_embeddings(train_test_file=f'../output/folds_{self.outcomes_type}.pkl', FDIR_sh=self.fdir)
+            genetic_data = gen_pca_embeddings(ia_version=self.ia_version, train_test_file=f'../output/folds_{self.outcomes_type}.pkl', FDIR_sh=self.fdir)
         else: 
             print('[generating pca embeddings using random train/test split]')
-            genetic_data = gen_pca_embeddings(train_test_file=None, FDIR_sh=self.fdir)
+            genetic_data = gen_pca_embeddings(ia_version=self.ia_version, train_test_file=None, FDIR_sh=self.fdir)
 #         print('[reading in pca embeddings from ia13 csv.]')
 #         genetic_data = pd.read_csv('./ia13_pca_embeddings.csv', delimiter=',') 
         genetic_data = genetic_data[['PUBLIC_ID','PC1','PC2','PC3','PC4','PC5']]
