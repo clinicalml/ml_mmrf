@@ -175,8 +175,7 @@ class MMRFSplitter:
                 # outcomes
                 final_dataset[fold][tvt]['ys_seq'] = self.dset['y_data'][idx].reshape(-1,1)
                 final_dataset[fold][tvt]['ce']     = (1.-self.dset['event_obs'][idx]).reshape(-1,1)
-                if self.outcomes_type == 'trt_resp': 
-                    final_dataset[fold][tvt]['feature_names_y']    = self.dset['tr_names']
+                final_dataset[fold][tvt]['feature_names_y']    = self.dset['names']
                 # baseline
                 final_dataset[fold][tvt]['b']      = self.dset['baseline_data_clean'][idx]
                 final_dataset[fold][tvt]['feature_names']    = self.dset['baseline_names']
@@ -205,39 +204,39 @@ class MMRFSplitter:
                 all_t = M_t.sum(-1)
                 keep_idx = np.argwhere(all_t>T_lb).ravel()
                 if tvt == 'train':
-                    if self.outcomes_type == 'mortality':
-                        C = final_dataset[fold][tvt]['ce']
-                        print ('Before: N censored/total ',C.sum(), C.shape[0], C.sum()/C.shape[0])
-                    elif self.outcomes_type == 'trt_resp': 
+                    if self.outcomes_type == 'trt_resp' or 'bin' in self.outcomes_type: 
                         Y = final_dataset[fold][tvt]['ys_seq']
                         C = final_dataset[fold][tvt]['ce']
                         print ('Before: N censored/total ',C.sum(), C.shape[0], C.sum()/C.shape[0])
                         for i in range(np.max(Y)+1): 
                             print (f'Before: Y class {i}, N: {len(np.where(Y == i)[0])}')
+                    else:
+                        C = final_dataset[fold][tvt]['ce']
+                        print ('Before: N censored/total ',C.sum(), C.shape[0], C.sum()/C.shape[0])
                 for kk in ['a','x','m','ys_seq','ce','b','pids','m_a']:
                     final_dataset[fold][tvt][kk] = np.copy(final_dataset[fold][tvt][kk][keep_idx])
                 if tvt == 'train':
-                    if self.outcomes_type == 'mortality':
-                        C = final_dataset[fold][tvt]['ce']
-                        print ('After: N censored/total ',C.sum(), C.shape[0], C.sum()/C.shape[0])
-                    elif self.outcomes_type == 'trt_resp': 
+                    if self.outcomes_type == 'trt_resp' or 'bin' in self.outcomes_type: 
                         Y = final_dataset[fold][tvt]['ys_seq']
                         C = final_dataset[fold][tvt]['ce']
                         print ('After: N censored/total ',C.sum(), C.shape[0], C.sum()/C.shape[0])
                         for i in range(np.max(Y)+1): 
                             print (f'After: Y class {i}, N: {len(np.where(Y == i)[0])}')
+                    else:
+                        C = final_dataset[fold][tvt]['ce']
+                        print ('After: N censored/total ',C.sum(), C.shape[0], C.sum()/C.shape[0])
             print (final_dataset[fold]['train']['x'].shape)
             for tvt in ['valid', 'test']: 
                 print(f'{tvt}...')
-                if self.outcomes_type == 'mortality':
-                    C = final_dataset[fold][tvt]['ce']
-                    print ('Before: N censored/total ',C.sum(), C.shape[0], C.sum()/C.shape[0])
-                elif self.outcomes_type == 'trt_resp': 
+                if self.outcomes_type == 'trt_resp' or 'bin' in self.outcomes_type: 
                     Y = final_dataset[fold][tvt]['ys_seq']
                     C = final_dataset[fold][tvt]['ce']
                     print ('Before: N censored/total ',C.sum(), C.shape[0], C.sum()/C.shape[0])
                     for i in range(np.max(Y)+1): 
                         print (f'Before: Y class {i}, N: {len(np.where(Y == i)[0])}')
+                else:
+                    C = final_dataset[fold][tvt]['ce']
+                    print ('Before: N censored/total ',C.sum(), C.shape[0], C.sum()/C.shape[0])
 
             final_datasets.append(final_dataset)
             

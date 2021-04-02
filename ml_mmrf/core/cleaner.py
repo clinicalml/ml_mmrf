@@ -2,6 +2,7 @@ import os, sys, glob
 import pickle
 import pandas as pd
 import numpy as np
+import copy
 import warnings
 import matplotlib.pylab as plt
 import seaborn as sns
@@ -50,7 +51,7 @@ class MMRFCleaner:
     and normalizing the values (depending on the type of the data: baseline, labs, or treatment).
     '''
     
-    def __init__(self, dataset, outcomes_type='mortality'):
+    def __init__(self, dataset, outcomes_type='os'):
         '''
         We copy over the data curated in the Parser class into self.clean_dset.
         
@@ -65,17 +66,19 @@ class MMRFCleaner:
         self.clean_dset = {}
         self.outcomes_type = outcomes_type
         # we store different outcome data depending on the specified outcomes type (i.e. either mortality or treatment response)
-        if outcomes_type == 'mortality':     
-            self.clean_dset['patient_ids'] = dataset['outcomes']['pids']
-            self.clean_dset['y_data']      = dataset['outcomes']['data']
-            self.clean_dset['event_obs']   = dataset['outcomes']['obs']
+        k = copy.deepcopy(outcomes_type)
+        if outcomes_type == 'pfs_bin': 
+            k = 'pfs' 
+        elif outcomes_type == 'pfs_asct_bin': 
+            k = 'pfs_asct'
+        elif outcomes_type == 'pfs_nonasct_bin': 
+            k = 'pfs_nonasct'
         elif outcomes_type == 'trt_resp': 
-            self.clean_dset['patient_ids'] = dataset['trt_outcomes']['pids']
-            self.clean_dset['y_data']      = dataset['trt_outcomes']['data']
-            self.clean_dset['event_obs']   = dataset['trt_outcomes']['obs']
-            self.clean_dset['tr_names']    = dataset['trt_outcomes']['names']
-            self.clean_dset['ym_data']     = dataset['outcomes']['data']
-            self.clean_dset['ce']     = dataset['outcomes']['obs']
+            k = 'trt_outcomes'
+        self.clean_dset['patient_ids'] = dataset[k]['pids']
+        self.clean_dset['y_data']      = dataset[k]['data']
+        self.clean_dset['event_obs']   = dataset[k]['obs']
+        self.clean_dset['names']       = dataset[k]['names']
         
         #  we restrict all data to share a global ordering over patient ids (from outcomes)
         pts = self.clean_dset['patient_ids'].tolist()

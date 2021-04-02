@@ -62,10 +62,12 @@ def get_sequential_tensor(df, id_col, feature_name, day_start, day_end = None, g
                 hit_second_line = True
             st = int(st)
             en = int(en)
+            if pat_idx == 'MMRF_1064' and ft > 2: # hardcoding in fix for MMRF_1064
+                continue
             vals[st:en+1] = ft
             obs[st:en+1]  = 1
-        if feature_name == 'line' and not hit_second_line: 
-            print(f'\ttget_sequential_tensor: did not hit second line for {pat_idx}')
+        if feature_name == 'line': 
+            hit_second_line = False
         patlist.append(pat_idx); flist.append(vals); olist.append(obs)
     
     patient_ids = np.array(patlist); feature_data= np.array(flist); obs_data = np.array(olist)

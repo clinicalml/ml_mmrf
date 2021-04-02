@@ -237,7 +237,7 @@ def load_mmrf(fold_span = range(5), data_dir=None, digitize_K = 0, digitize_meth
                         sec_end = np.min([np.max(np.where(a[pt,:,-2] == 1.)[0])+3,new_m.shape[1]])
                     new_m[pt,sec_end:,:] = 0.
                 new_dset[fold][k]['m'] = new_m
-        print(d)
+        #print(d)
     elif window == 'second':
         pass # implement mask alteration or altering dataset for restricting line of therapy
     
@@ -249,7 +249,7 @@ def load_mmrf(fold_span = range(5), data_dir=None, digitize_K = 0, digitize_meth
         ablate_idxs = {
             'none': (0,0),
             'none_trt': (0,2),
-            'all': (0,new_dset[1]['train']['b'].shape[-1]), 
+            'all': (0,new_dset[fold_span[0]]['train']['b'].shape[-1]), 
             'demog': (1,3),
             'iss': (0,4),
             'pc': (0,9),
@@ -263,7 +263,7 @@ def load_mmrf(fold_span = range(5), data_dir=None, digitize_K = 0, digitize_meth
             'cyc': (0,3),
             'dex': (0,4),
             'len': (0,5),
-            'lines': (0,new_dset[1]['train']['a'].shape[-1])
+            'lines': (0,new_dset[fold_span[0]]['train']['a'].shape[-1])
         }
         assert len(feats) != 0, 'Need to pass in the ablation params in feats argument'
         for fold in fold_span: 
