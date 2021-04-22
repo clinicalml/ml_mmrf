@@ -72,7 +72,7 @@ class MMRFSplitter:
             valist += idx_val.tolist()
         return np.array(trlist), np.array(valist)
         
-    def split_data(self, nfolds = 5, recreate_splits=True):
+    def split_data(self, nfolds = 5, recreate_splits=True, seed=0):
         '''    
         Main function that splits the data into training and test sets, and then 
         the training set into five folds. Note that there is a single (global) test 
@@ -94,6 +94,8 @@ class MMRFSplitter:
             idx_list  = np.arange(event_obs.shape[0])
             trainidx, testidx = self.split_balanced_general(idx_list, event_obs)
 
+            if seed != 0: 
+                np.random.seed(seed)
             folds_idx = {}; pids = {}
             for fold in range(nfolds):
                 idx_list = np.arange(trainidx.shape[0])
