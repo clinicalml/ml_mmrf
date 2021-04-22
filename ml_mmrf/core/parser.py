@@ -320,8 +320,6 @@ class MMRFParser:
         clipped = merged[baseline_labs].clip(upper = maxval, axis=1)
         print ('parse_baselines: clipped values to 5x median (before/after)\n',pd.concat([merged[baseline_labs].max(0), clipped[baseline_labs].max(0)],axis=1))
         merged.loc[:,baseline_labs] = clipped
-        
-        # add heavy chain/light chain feature to baseline features as well as myeloma type of patients
         serum_labs = ['D_LAB_serum_iga', 'D_LAB_serum_igg', 'D_LAB_serum_igm','D_LAB_serum_lambda', \
                       'D_LAB_serum_kappa', 'D_LAB_serum_m_protein']
         mtype_dfs = get_mtype(df_ppv, serum_labs) #hc_df, igg_df, iga_df, igm_df, kappa_df, lambda_df
@@ -397,7 +395,7 @@ class MMRFParser:
         df_pfs_non_nan = df_pfs_non_nan.fillna(0)
         df_pfs_non_nan['e'] = (df_pfs_non_nan['death_lsta_dy']>=540).values.astype(int)
         df_pfs_non_nan['PFS_BINARY'] = 1-df_pfs_non_nan['e']
-        df_pfs_non_nan['PFS'] = df_pfs_non_nan['e']*df_pfs_non_nan['death_lsta_dy']
+        df_pfs_non_nan['PFS'] = df_pfs_non_nan['death_lsta_dy']
         pids_y0_nonasct = df_pfs_non_nan['PUBLIC_ID'].values
         y0_pfs_nonasct      = df_pfs_non_nan['PFS'].values/float(granularity)
         y0_pfs_bin_nonasct  = df_pfs_non_nan['PFS_BINARY']
@@ -426,7 +424,7 @@ class MMRFParser:
         df_pfs_as_nan = df_pfs_as_nan.fillna(0)
         df_pfs_as_nan['e'] = (df_pfs_as_nan['death_lsta_dy']>=1095).values.astype(int)
         df_pfs_as_nan['PFS_BINARY'] = 1-df_pfs_as_nan['e']
-        df_pfs_as_nan['PFS'] = df_pfs_as_nan['e']*(df_pfs_as_nan['death_lsta_dy']-df_pfs_as_nan['trt_day'])
+        df_pfs_as_nan['PFS'] = (df_pfs_as_nan['death_lsta_dy']-df_pfs_as_nan['trt_day'])
         pids_y0_asct = df_pfs_as_nan['PUBLIC_ID'].values
         y0_pfs_asct      = df_pfs_as_nan['PFS'].values/float(granularity)
         y0_pfs_bin_asct  = df_pfs_as_nan['PFS_BINARY']
