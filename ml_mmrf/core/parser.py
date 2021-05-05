@@ -304,7 +304,7 @@ class MMRFParser:
         """
         df_pp = self.data_files['PER_PATIENT']; df_ppv = self.data_files['PER_PATIENT_VISIT']
         ia_version = self.ia_version
-        df = df_pp[['PUBLIC_ID', 'R_ISS', 'D_PT_age', 'D_PT_gender', 'ecog']] # 'line1sct'
+        df = df_pp[['PUBLIC_ID', 'R_ISS', 'D_PT_age', 'D_PT_gender', 'ecog', 'line1sct']] # 'line1sct'
         df.rename(columns={'R_ISS':'iss','D_PT_age':'age','D_PT_gender':'gender'}, inplace=True)
         
         # Add beta2 microglobulin into baseline tensor
@@ -328,12 +328,12 @@ class MMRFParser:
         merged.fillna(merged.mean(0), axis=0, inplace = True)
 
         if self.rna_seq == 'bulk': 
+            print('[generating pca embeddings from bulk RNA seq data]')
             if os.path.exists(f'../output/folds_{self.outcomes_type}.pkl'): 
-                print('[generating pca embeddings using pickled folds]')
-                genetic_data = gen_pca_embeddings(ia_version=self.ia_version, train_test_file=f'../output/folds_{self.outcomes_type}.pkl', FDIR_sh=self.fdir)
+                genetic_data = gen_pca_embeddings(ia_version=self.ia_version, train_test_file=f'../output/folds_{self.outcomes_type}.pkl', \
+                        FDIR_sh=self.fdir, use_train_test=False)
             else: 
-                print('[generating pca embeddings using random train/test split]')
-                genetic_data = gen_pca_embeddings(ia_version=self.ia_version, train_test_file=None, FDIR_sh=self.fdir)
+                genetic_data = gen_pca_embeddings(ia_version=self.ia_version, train_test_file=None, FDIR_sh=self.fdir, use_train_test=False)
             genetic_data = genetic_data[['PUBLIC_ID','PC1','PC2','PC3','PC4','PC5']]
         elif self.rna_seq == 'sc': 
             genetic_data = pd.read_csv(os.path.join(self.fdir,'bulk_sc_mmrf.csv'), delimiter=',', encoding='latin-1')
@@ -365,78 +365,66 @@ class MMRFParser:
 
     def parse_pfs(self): 
         """
-        TODO: parse overall survival for all patients
-            - need to make sure to take into account ASCT 
-            - for now, we can treat as a binary classification problem
-            - possible outcomes_type: 'pfs_bin' or 'pfs'
-        """  
+        Extract PFS outcome for all patients, broadly divided into those who were given ASCT and 
+        those who were not eligible. We also record a binarized version of the PFS, which differentiates
+        between "early progressors" and "late progressors." The former category are those patients
+        who progress within 18 months (ASCT ineligible)/3 years (given ASCT), and the latter is for those
+        patients who progress beyond 18 months/3 years. 
+        
+        Args: 
+            None
+        Sets: 
+            We don't return anything, but rather set the 'pfs' and 'pfs_bin' keys in our 
+            dataset dictionary. 
+            y: size N x 1, array containing the 'time to event' value for each patient
+            e: size N x 1, binary vector where 1 refers to 'uncensored' or 'observed' 
+            and 0 refers to 'censored'
+            pids: patient ids 
+            names: name of feature (i.e. 'progression free survival')
+        """
         df_pfs_asct = self.data_files['OS_PFS_ASCT']; df_pfs_nonasct = self.data_files['OS_PFS_nonASCT']
         granularity = self.granularity 
         # first, look at patients who didn't receive transplant, set PFS-binary to 1 if survival is less than 18months 
         ## of the non-ASCT folks, look at people who had a progression day 
-        df_pfs_non = df_pfs_nonasct[['Patient','Progression Day']]
-        df_pfs_non.rename(columns = {'Patient': 'PUBLIC_ID', 'Progression Day': 'PFS'}, inplace=True)
-        df_pfs_non_val = df_pfs_non.dropna(subset=['PFS'])
-        assert (df_pfs_non_val.PUBLIC_ID.unique().shape[0]==df_pfs_non_val.shape[0]), 'duplicates found'
-        df_pfs_non_val['PFS_BINARY'] = (df_pfs_non_val['PFS']<540).values.astype(int) # 18 month threshold for non-ASCT patients
-        pids_y1_nonasct = df_pfs_non_val['PUBLIC_ID'].values
-        y1_pfs_nonasct      = df_pfs_non_val['PFS'].values/float(granularity)
-        y1_pfs_bin_nonasct  = df_pfs_non_val['PFS_BINARY']
-        e1_nonasct = np.ones_like(y1_pfs_nonasct).astype(int)
+        df_pfs_non = df_pfs_nonasct[['Patient', 'Progression', 'Dead', 'Progression Day', 'Last Alive/Dead']]
+        df_pfs_non.rename(columns = {'Patient': 'PUBLIC_ID', 'Progression Day': 'progression_day', \
+                                    'Last Alive/Dead': 'death_lsta_dy', 'Progression': 'progression', \
+                                    'Dead': 'dead'}, inplace=True)
+        assert (df_pfs_non.PUBLIC_ID.unique().shape[0]==df_pfs_non.shape[0]), 'duplicates found'
+        df_pfs_non['progression'] = df_pfs_non.progression.map({'yes':1, 'no':0})
+        df_pfs_non['dead'] = df_pfs_non.dead.map({'yes':1, 'no':0})
+        df_pfs_non['progress'] = df_pfs_non['dead'] + df_pfs_non['progression']
+        df_pfs_non['progress'] = np.where(df_pfs_non['progress']==0, 0, 1)
+        df_pfs_non['progression_day'] = df_pfs_non['progression_day'].fillna(df_pfs_non['death_lsta_dy'])
+        df_pfs_non['PFS'] = df_pfs_non[['progression_day', 'death_lsta_dy']].astype(int).min(axis=1)
+        y_nonasct      = df_pfs_non['PFS'].values/float(granularity); ybin_nonasct   = (df_pfs_non['PFS']<540).astype(int).values 
+        e_nonasct      = df_pfs_non['progress'].values
+        ebin_nonasct   = ((df_pfs_non['PFS']>=540) | (df_pfs_non['progress']==1)).astype(int).values
+        pids_nonasct   = df_pfs_non['PUBLIC_ID'].values 
+        print ('parse pfs non-asct outcomes: ', pids_nonasct.shape, y_nonasct.shape, ybin_nonasct.shape, e_nonasct.shape, ebin_nonasct.shape)
         
-        ## now, of the non-ASCT folks, consider those people who don't have progression day filled in. 
-        ## there are two cases: last day alive or death day is A] greater than 18 months or B] less than 18 months 
-        ## if A], then fill in y1_pfs with the lst_day_alive or death_day, y1_pfs_bin with 0, and e with 1
-        ## if B], then fill in y1_pfs with 0., y1_pfs_bin with 0, and e with 0
-        
-        df_pfs_non_nan = df_pfs_nonasct[~df_pfs_nonasct['Patient'].isin(pids_y1_nonasct.ravel().tolist())].reset_index(drop=True)
-        df_pfs_non_nan = df_pfs_non_nan[['Patient', 'Progression Day', 'Last Alive/Dead']]
-        df_pfs_non_nan.rename(columns = {'Patient': 'PUBLIC_ID', 'Progression Day': 'PFS', 'Last Alive/Dead': 'death_lsta_dy'}, inplace=True)
-        df_pfs_non_nan = df_pfs_non_nan.fillna(0)
-        df_pfs_non_nan['e'] = (df_pfs_non_nan['death_lsta_dy']>=540).values.astype(int)
-        df_pfs_non_nan['PFS_BINARY'] = 1-df_pfs_non_nan['e']
-        df_pfs_non_nan['PFS'] = df_pfs_non_nan['death_lsta_dy']
-        pids_y0_nonasct = df_pfs_non_nan['PUBLIC_ID'].values
-        y0_pfs_nonasct      = df_pfs_non_nan['PFS'].values/float(granularity)
-        y0_pfs_bin_nonasct  = df_pfs_non_nan['PFS_BINARY']
-        # make patients who have "reason off study" as "lost to follow-up" or "consent" to be e=0 (regardless of A] or B])
-        e0_nonasct = df_pfs_non_nan['e'].values.astype(int) 
-        assert len(set(pids_y0_nonasct.tolist()).intersection(set(pids_y1_nonasct.tolist())))==0,'Found intersection between dead and assumed not dead'
-        pids_nonasct, e_nonasct = np.concatenate([pids_y0_nonasct.ravel(), pids_y1_nonasct.ravel()],0), np.concatenate([e0_nonasct.ravel(), e1_nonasct.ravel()],0)
-        y_nonasct, ybin_nonasct = np.concatenate([y0_pfs_nonasct.ravel(), y1_pfs_nonasct.ravel()],0), np.concatenate([y0_pfs_bin_nonasct.ravel(), y1_pfs_bin_nonasct.ravel()],0)
-        print ('parse pfs non-asct outcomes: ', pids_nonasct.shape, y_nonasct.shape, ybin_nonasct.shape, e_nonasct.shape)
-        
-        # now, look at patients who were given transplants 
-        df_pfs_as     = df_pfs_asct[['Patient','Pre-ASCT Progression Day','ASCT Day', 'Post-ASCT Progression Day']]
-        df_pfs_as.rename(columns = {'Patient': 'PUBLIC_ID', 'Pre-ASCT Progression Day': 'pacPFS', 'ASCT Day': 'trt_day', 'Post-ASCT Progression Day': 'acPFS'}, inplace=True)
-        df_pfs_as_val = df_pfs_as.dropna(subset=['acPFS'])
-        assert (df_pfs_as_val.PUBLIC_ID.unique().shape[0]==df_pfs_as_val.shape[0]), 'duplicates found'
-        df_pfs_as_val['PFS']        = df_pfs_as_val['acPFS']-df_pfs_as_val['trt_day']
-        df_pfs_as_val['PFS_BINARY'] = (df_pfs_as_val['PFS']<1095).values.astype(int) # 3 year threshold for ASCT patients
-        pids_y1_asct = df_pfs_as_val['PUBLIC_ID'].values
-        y1_pfs_asct  = df_pfs_as_val['PFS'].values/float(granularity) 
-        y1_pfs_bin_asct = df_pfs_as_val['PFS_BINARY']
-        e1_asct      = np.ones_like(y1_pfs_asct).astype(int) 
-        
-        df_pfs_as_nan = df_pfs_asct[~df_pfs_asct['Patient'].isin(pids_y1_asct.ravel().tolist())].reset_index(drop=True)
-        df_pfs_as_nan = df_pfs_as_nan[['Patient','Pre-ASCT Progression Day','ASCT Day','Post-ASCT Progression Day','Last Alive/Dead']]
-        df_pfs_as_nan.rename(columns = {'Patient': 'PUBLIC_ID', 'Pre-ASCT Progression Day': 'pacPFS', 'ASCT Day': 'trt_day', 'Post-ASCT Progression Day': 'acPFS', 'Last Alive/Dead': 'death_lsta_dy'}, inplace=True)
-        df_pfs_as_nan = df_pfs_as_nan.fillna(0)
-        df_pfs_as_nan['e'] = (df_pfs_as_nan['death_lsta_dy']>=1095).values.astype(int)
-        df_pfs_as_nan['PFS_BINARY'] = 1-df_pfs_as_nan['e']
-        df_pfs_as_nan['PFS'] = (df_pfs_as_nan['death_lsta_dy']-df_pfs_as_nan['trt_day'])
-        pids_y0_asct = df_pfs_as_nan['PUBLIC_ID'].values
-        y0_pfs_asct      = df_pfs_as_nan['PFS'].values/float(granularity)
-        y0_pfs_bin_asct  = df_pfs_as_nan['PFS_BINARY']
-        # make patients who have "reason off study" as "lost to follow-up" or "consent" to be e=0 (regardless of A] or B])
-        e0_asct = df_pfs_as_nan['e'].values.astype(int)
-        assert len(set(pids_y0_asct.tolist()).intersection(set(pids_y1_asct.tolist())))==0,'Found intersection between dead and assumed not dead'
-        pids_asct, e_asct = np.concatenate([pids_y0_asct.ravel(), pids_y1_asct.ravel()],0), np.concatenate([e0_asct.ravel(), e1_asct.ravel()],0)
-        y_asct, ybin_asct = np.concatenate([y0_pfs_asct.ravel(), y1_pfs_asct.ravel()],0), np.concatenate([y0_pfs_bin_asct.ravel(), y1_pfs_bin_asct.ravel()],0)
-        print ('parse pfs asct outcomes: ',pids_asct.shape, y_asct.shape, ybin_asct.shape, e_asct.shape)
-        
-        pids, y, ybin, e = np.concatenate([pids_nonasct.ravel(),pids_asct.ravel()],0), np.concatenate([y_nonasct.ravel(),y_asct.ravel()],0), np.concatenate([ybin_nonasct.ravel(),ybin_asct.ravel()],0), np.concatenate([e_nonasct.ravel(),e_asct.ravel()],0)
-        print ('parse pfs (all) outcomes: ',pids.shape, y.shape, ybin.shape, e.shape)
+        df_pfs_as     = df_pfs_asct[['Patient','Pre-ASCT Progression Day','ASCT Day', 'Post-ASCT Progression Day', \
+                                     'Post-ASCT Progression', 'Dead', 'Last Alive/Dead']]
+        df_pfs_as.rename(columns = {'Patient': 'PUBLIC_ID', 'Pre-ASCT Progression Day': 'pacPFS', 'ASCT Day': 'trt_day', \
+                                    'Post-ASCT Progression Day': 'ac_progression_day', 'Post-ASCT Progression': 'ac_progression', 'Dead': 'dead', \
+                                    'Last Alive/Dead': 'death_lsta_dy'}, inplace=True)
+        assert (df_pfs_as.PUBLIC_ID.unique().shape[0]==df_pfs_as.shape[0]), 'duplicates found'
+        df_pfs_as['ac_progression'] = df_pfs_as.ac_progression.map({'yes':1,'no':0})
+        df_pfs_as['dead'] = df_pfs_as.dead.map({'yes':1,'no':0})
+        df_pfs_as['progress'] = df_pfs_as['dead'] + df_pfs_as['ac_progression']
+        df_pfs_as['progress'] = np.where(df_pfs_as['progress']==0, 0, 1)
+        df_pfs_as['ac_progression_day'] = df_pfs_as['ac_progression_day'].fillna(df_pfs_as['death_lsta_dy'])
+        df_pfs_as['PFS'] = df_pfs_as[['ac_progression_day', 'death_lsta_dy']].astype(int).min(axis=1)
+        y_asct      = df_pfs_as['PFS'].values/float(granularity); ybin_asct   = (df_pfs_as['PFS']<1080).astype(int).values 
+        e_asct      = df_pfs_as['progress'].values
+        ebin_asct   = ((df_pfs_as['PFS']>=1080) | (df_pfs_as['progress']==1)).astype(int).values
+        pids_asct   = df_pfs_as['PUBLIC_ID'].values 
+        print ('parse pfs asct outcomes: ', pids_asct.shape, y_asct.shape, ybin_asct.shape, e_asct.shape, ebin_asct.shape)
+
+        pids, y, ybin, e, ebin = np.concatenate([pids_nonasct.ravel(),pids_asct.ravel()],0), \
+                                np.concatenate([y_nonasct.ravel(),y_asct.ravel()],0), np.concatenate([ybin_nonasct.ravel(),ybin_asct.ravel()],0),\
+                                np.concatenate([e_nonasct.ravel(),e_asct.ravel()],0), np.concatenate([ebin_nonasct,ebin_asct],0)
+        print ('parse pfs (all) outcomes: ',pids.shape, y.shape, ybin.shape, e.shape, ebin.shape)
         
         # fill out dictionaries 
         self.dataset['pfs_nonasct']['pids'] = pids_nonasct
@@ -446,16 +434,19 @@ class MMRFParser:
             self.dataset['pfs_nonasct']['data'] = ybin_nonasct
             self.dataset['pfs_asct']['data'] = ybin_asct
             self.dataset['pfs']['data'] = ybin
+            self.dataset['pfs_nonasct']['obs'] = ebin_nonasct
+            self.dataset['pfs_asct']['obs'] = ebin_asct
+            self.dataset['pfs']['obs'] = ebin
         else: 
             self.dataset['pfs_nonasct']['data'] = y_nonasct
             self.dataset['pfs_asct']['data'] = y_asct
             self.dataset['pfs']['data'] = y
-        self.dataset['pfs_nonasct']['obs']  = e_nonasct
-        self.dataset['pfs_asct']['obs']  = e_asct
-        self.dataset['pfs']['obs']  = e
-        self.dataset['pfs_nonasct']['names']= np.array(['progression free survival (non-ASCT)'])
-        self.dataset['pfs_asct']['names']= np.array(['progression free survival (ASCT)'])
-        self.dataset['pfs']['names']= np.array(['progression free survival (all)'])
+            self.dataset['pfs_nonasct']['obs'] = e_nonasct
+            self.dataset['pfs_asct']['obs'] = e_asct
+            self.dataset['pfs']['obs'] = e
+        self.dataset['pfs_nonasct']['names'] = np.array(['progression free survival (non-ASCT)'])
+        self.dataset['pfs_asct']['names'] = np.array(['progression free survival (ASCT)'])
+        self.dataset['pfs']['names'] = np.array(['progression free survival (all)'])
 
     def parse_os(self):
         """
