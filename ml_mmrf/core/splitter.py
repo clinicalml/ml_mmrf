@@ -88,11 +88,11 @@ class MMRFSplitter:
         '''
         # train_valid_folds, testidx = get_splits(new_dset['event_obs'], nfolds=5)
         
-        np.random.seed(0)
+        np.random.seed(seed)
         if recreate_splits: 
             event_obs = self.dset['event_obs']
             idx_list  = np.arange(event_obs.shape[0])
-            trainidx, testidx = self.split_balanced_general(idx_list, event_obs)
+            trainidx, testidx = self.split_balanced_general(idx_list, event_obs, trfrac=0.7)
 
             if seed != 0: 
                 np.random.seed(seed)
@@ -100,7 +100,7 @@ class MMRFSplitter:
             for fold in range(nfolds):
                 idx_list = np.arange(trainidx.shape[0])
                 event_fold= event_obs[trainidx]
-                fi_idx_train, fi_idx_valid = self.split_balanced_general(idx_list, event_fold)
+                fi_idx_train, fi_idx_valid = self.split_balanced_general(idx_list, event_fold, trfrac=0.75)
                 fi_tr, fi_va = trainidx[fi_idx_train], trainidx[fi_idx_valid]
                 folds_idx[fold] = (fi_tr, fi_va)
                 pids[fold] = np.concatenate((self.dset['patient_ids'][fi_tr],self.dset['patient_ids'][fi_va]))
